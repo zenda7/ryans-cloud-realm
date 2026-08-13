@@ -28,7 +28,7 @@
             gap: 16px;
         }
 
-        /* 1. 顶部 Header：信用卡平铺背景填满 + 白体文字衬于上层 */
+        /* 1. 顶部 Header */
         .banner {
             position: relative;
             border-radius: 20px;
@@ -65,7 +65,6 @@
             padding: 0 16px;
         }
 
-        /* 去掉云朵，白色加粗黑体 */
         .banner-title {
             font-size: 24px;
             font-weight: 900;
@@ -83,7 +82,7 @@
             text-shadow: 0 1px 4px rgba(0, 0, 0, 0.5);
         }
 
-        /* 2. 导航 Tab：去掉数字编号 */
+        /* 2. 导航 Tab */
         .tabs {
             background: #ffffff;
             border-radius: 16px;
@@ -226,10 +225,12 @@
             gap: 12px;
         }
 
+        /* 优化对齐：头部微调 */
         .card-header {
             display: flex;
             align-items: center;
             gap: 12px;
+            padding: 0 2px;
         }
 
         .card-face {
@@ -279,25 +280,28 @@
         .fee-free { background: #e6fffa; color: #047857; }
         .fee-paid { background: #fff7ed; color: #c2410c; }
 
+        /* 优化对齐：减少内边距，方便标签靠左 */
         .card-body {
             display: flex;
             flex-direction: column;
             gap: 8px;
             background: #f8fafc;
             border-radius: 12px;
-            padding: 10px 12px;
+            padding: 10px 8px;
         }
 
+        /* 核心修改：设定 gap 和固定宽度，让右侧完美对齐上方的卡片名称 */
         .info-row {
             display: flex;
             font-size: 12px;
             line-height: 1.4;
+            gap: 8px;
         }
 
         .info-label {
             font-weight: 700;
             color: #475569;
-            width: 72px;
+            width: 68px;
             flex-shrink: 0;
         }
 
@@ -325,7 +329,7 @@
             </div>
         </div>
 
-        <!-- 2. Tabs（无数字编号） -->
+        <!-- 2. Tabs -->
         <div class="tabs">
             <button class="tab-btn">必要准备</button>
             <button class="tab-btn">申卡指南</button>
