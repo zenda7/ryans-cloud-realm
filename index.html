@@ -3,119 +3,356 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>莱恩的云上国度 | Ryan's Cloud Realm</title>
+  <title>莱恩的云上国度 | 云居民的美国信用卡情报库</title>
   <!-- 引入 Supabase 官方 SDK -->
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <!-- 允许跨域加载银行官方图片 -->
+  <meta name="referrer" content="no-referrer">
   <style>
-    body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; background-color: #f8fafc; color: #1e293b; margin: 0; padding: 20px; }
-    .container { max-width: 900px; margin: 0 auto; }
-    header { border-bottom: 2px solid #0284c7; padding-bottom: 15px; margin-bottom: 30px; }
-    h1 { color: #0284c7; margin: 0; font-size: 24px; }
-    .subtitle { color: #64748b; font-size: 14px; margin-top: 5px; }
-    section { margin-bottom: 35px; }
-    h2 { border-left: 4px solid #0284c7; padding-left: 10px; font-size: 18px; margin-bottom: 20px; }
-    
-    /* 信用卡卡片布局 */
-    .card-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(380px, 1fr)); gap: 20px; }
-    .card { border: 1px solid #e2e8f0; border-radius: 12px; background: #fff; overflow: hidden; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05); display: flex; flex-direction: column; }
-    .card-img { width: 100%; height: 160px; object-fit: cover; background-color: #cbd5e1; }
-    .card-body { padding: 18px; flex: 1; display: flex; flex-direction: column; justify-content: space-between; }
-    .card-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 10px; }
-    .card-title { font-size: 16px; font-weight: bold; margin: 0; color: #0f172a; }
-    .badge { font-size: 12px; background: #e0f2fe; color: #0369a1; padding: 3px 8px; border-radius: 6px; font-weight: 600; white-space: nowrap; }
-    .info-row { font-size: 14px; margin: 4px 0; }
-    .bonus { color: #d97706; font-weight: bold; }
-    .benefits { font-size: 13px; color: #475569; background: #f8fafc; padding: 10px; border-radius: 8px; margin-top: 10px; border-left: 3px solid #38bdf8; }
+    * { box-sizing: border-box; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+      background: linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 100%);
+      color: #0f172a;
+      margin: 0;
+      padding: 0;
+      min-height: 100vh;
+    }
+    .container { max-width: 1000px; margin: 0 auto; padding: 20px; }
 
-    .post-tag { font-size: 12px; background: #f1f5f9; color: #475569; padding: 2px 6px; border-radius: 4px; font-weight: bold; }
-    .loading { color: #94a3b8; font-size: 14px; }
-    .error-msg { color: #ef4444; font-size: 14px; }
+    /* Header 头部放大美化 */
+    header {
+      background: #ffffff;
+      border-radius: 20px;
+      padding: 30px 25px;
+      box-shadow: 0 10px 25px -5px rgba(2, 132, 199, 0.1);
+      margin-bottom: 25px;
+      display: flex;
+      align-items: center;
+      gap: 20px;
+      border: 1px solid #bae6fd;
+    }
+    .header-img {
+      width: 80px;
+      height: 80px;
+      border-radius: 16px;
+      object-fit: cover;
+      box-shadow: 0 4px 12px rgba(2, 132, 199, 0.2);
+    }
+    .header-text h1 {
+      font-size: 32px;
+      margin: 0;
+      color: #0284c7;
+      font-weight: 800;
+      letter-spacing: -0.5px;
+    }
+    .header-text .subtitle {
+      color: #0369a1;
+      font-size: 16px;
+      margin-top: 6px;
+      font-weight: 500;
+    }
+
+    /* 一级目录 Navigation Tabs */
+    .nav-tabs {
+      display: flex;
+      gap: 12px;
+      margin-bottom: 25px;
+      background: #ffffff;
+      padding: 8px;
+      border-radius: 14px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+    }
+    .nav-btn {
+      flex: 1;
+      padding: 12px 16px;
+      border: none;
+      background: transparent;
+      border-radius: 10px;
+      font-size: 16px;
+      font-weight: 700;
+      color: #64748b;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      text-align: center;
+    }
+    .nav-btn:hover { background: #f1f5f9; color: #0284c7; }
+    .nav-btn.active {
+      background: #0284c7;
+      color: #ffffff;
+      box-shadow: 0 4px 12px rgba(2, 132, 199, 0.3);
+    }
+
+    /* 模块面板 */
+    .tab-content { display: none; }
+    .tab-content.active { display: block; }
+
+    /* 列表与卡片样式 */
+    .section-card {
+      background: #ffffff;
+      border-radius: 16px;
+      padding: 20px;
+      margin-bottom: 15px;
+      border: 1px solid #e2e8f0;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.02);
+    }
+    .section-card h3 { margin: 0 0 8px 0; color: #0f172a; font-size: 18px; }
+    .section-card p { margin: 0; color: #64748b; font-size: 14px; line-height: 1.6; }
+    .tag { display: inline-block; background: #e0f2fe; color: #0369a1; font-size: 12px; font-weight: bold; padding: 2px 8px; border-radius: 4px; margin-bottom: 8px; }
+
+    /* 银行二级网格 */
+    .bank-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+      gap: 16px;
+      margin-bottom: 25px;
+    }
+    .bank-card {
+      background: #ffffff;
+      border-radius: 16px;
+      padding: 16px;
+      border: 2px solid #e2e8f0;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 15px;
+      transition: all 0.2s ease;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.03);
+    }
+    .bank-card:hover {
+      border-color: #0284c7;
+      transform: translateY(-2px);
+      box-shadow: 0 8px 16px rgba(2, 132, 199, 0.12);
+    }
+    .bank-card.active {
+      border-color: #0284c7;
+      background: #f0f9ff;
+    }
+    .bank-logo { width: 50px; height: 50px; border-radius: 12px; object-fit: cover; }
+    .bank-info h4 { margin: 0; font-size: 16px; color: #0f172a; }
+    .bank-info span { font-size: 12px; color: #64748b; }
+
+    /* 展开的信用卡列表 */
+    .cards-display {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(400px, 1fr));
+      gap: 20px;
+    }
+    .credit-card {
+      background: #ffffff;
+      border-radius: 16px;
+      border: 1px solid #e2e8f0;
+      overflow: hidden;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.03);
+      display: flex;
+      flex-direction: column;
+    }
+    .credit-card-img-wrapper {
+      background: #f8fafc;
+      padding: 20px;
+      text-align: center;
+      border-bottom: 1px solid #f1f5f9;
+    }
+    .credit-card-img { height: 140px; object-fit: contain; filter: drop-shadow(0 6px 8px rgba(0,0,0,0.15)); }
+    .credit-card-body { padding: 18px; flex: 1; display: flex; flex-direction: column; justify-content: space-between; }
+    .credit-card-title { font-size: 17px; font-weight: bold; margin: 0 0 10px 0; color: #0f172a; }
+    .fee-row { font-size: 14px; margin-bottom: 6px; }
+    .bonus-box { background: #fef3c7; color: #92400e; font-weight: bold; padding: 8px 12px; border-radius: 8px; font-size: 13px; margin-bottom: 10px; }
+    .benefits-box { background: #f8fafc; color: #334155; font-size: 13px; padding: 10px; border-radius: 8px; border-left: 3px solid #0284c7; line-height: 1.5; }
+
+    .loading { color: #64748b; font-size: 14px; text-align: center; padding: 20px; }
+    .error-msg { color: #ef4444; font-size: 14px; text-align: center; }
+
+    @media (max-width: 600px) {
+      .cards-display { grid-template-columns: 1fr; }
+      header { flex-direction: column; text-align: center; }
+    }
   </style>
 </head>
 <body>
   <div class="container">
+    <!-- 头部区域 -->
     <header>
-      <h1>☁️ 莱恩的云上国度</h1>
-      <div class="subtitle">Ryan's Cloud Realm - 全球与美国信用卡资讯与情报数据库</div>
+      <img class="header-img" src="https://images.unsplash.com/photo-1534447677768-be436bb09401?w=200&auto=format&fit=crop&q=80" alt="Cloud Realm">
+      <div class="header-text">
+        <h1>☁️ 莱恩的云上国度</h1>
+        <div class="subtitle">云居民的美国信用卡情报库</div>
+      </div>
     </header>
 
-    <section>
-      <h2>💳 热门信用卡大全</h2>
-      <div id="cards-container" class="loading">正在拉取云端信用卡数据库...</div>
-    </section>
+    <!-- 一级目录导航 -->
+    <div class="nav-tabs">
+      <button class="nav-btn active" onclick="switchTab('tab-prep', this)">1. 必要准备</button>
+      <button class="nav-btn" onclick="switchTab('tab-guide', this)">2. 申卡指南</button>
+      <button class="nav-btn" onclick="switchTab('tab-cards', this)">3. 卡片大全</button>
+    </div>
 
-    <section>
-      <h2>📰 申卡攻略与美卡指南</h2>
-      <div id="posts-container" class="loading">正在读取云端文章...</div>
-    </section>
+    <!-- 1. 必要准备模块 -->
+    <div id="tab-prep" class="tab-content active">
+      <div class="section-card">
+        <span class="tag">身份基础设施</span>
+        <h3>ITIN (个人纳税人识别号) 申请全流程</h3>
+        <p>非美国居民（NRA）积累美国信用记录的第一步。可通过 CAA 认证代办或自行填表向 IRS 申请，无需 SSN 即可开启美卡之旅。</p>
+      </div>
+      <div class="section-card">
+        <span class="tag">地址管理</span>
+        <h3>美国物理地址/转运地址 (Mail Forwarding) 与 Form 1583</h3>
+        <p>详细讲解如何选择合规且不被银行标记为商业地址的转运仓库，以及公证 Form 1583 接收银行卡片与账单信件的全过程。</p>
+      </div>
+      <div class="section-card">
+        <span class="tag">资金出海</span>
+        <h3>云居民美国银行账户 (Checking Account) 搭建</h3>
+        <p>盘点无需亲自赴美即可远程开户的美国银行（如 HSBC US、Capital One 360、Charles Schwab 等），保障信用卡还款资金通路。</p>
+      </div>
+    </div>
+
+    <!-- 2. 申卡指南模块 -->
+    <div id="tab-guide" class="tab-content">
+      <div class="section-card">
+        <span class="tag">批卡规则</span>
+        <h3>各大银行风控规则总结 (Chase 5/24, Amex 乱刷限制)</h3>
+        <p>详解 Chase 两年内不得超过 5 张新卡限制、Citi 8/65 规则以及 Capital One 严格的信用记录审核标准，帮助你合理规划开卡顺序。</p>
+      </div>
+      <div class="section-card">
+        <span class="tag">沟通技巧</span>
+        <h3>打 Recon 电话人工审核 (Reconsideration) 实用话术</h3>
+        <p>卡被拒绝或者 Pending 怎么办？整理 Chase、Amex 人工审核电话及应对听不清、听不懂时的标准沟通模板与提额策略。</p>
+      </div>
+    </div>
+
+    <!-- 3. 卡片大全模块（二级银行目录） -->
+    <div id="tab-cards" class="tab-content">
+      <p style="color:#64748b; font-size:14px; margin-bottom:15px;">👇 **点击下方银行选择次级网页，查看对应旗下的信用卡列表：**</p>
+      
+      <div class="bank-grid">
+        <div class="bank-card active" onclick="filterBank('American Express', this)">
+          <img class="bank-logo" src="https://images.unsplash.com/photo-1613243555988-441166d4d6fd?w=100&auto=format&fit=crop&q=80" alt="Amex">
+          <div class="bank-info">
+            <h4>American Express</h4>
+            <span>美国运通</span>
+          </div>
+        </div>
+
+        <div class="bank-card" onclick="filterBank('Chase', this)">
+          <img class="bank-logo" src="https://images.unsplash.com/photo-1563013544-824ae1b704d3?w=100&auto=format&fit=crop&q=80" alt="Chase">
+          <div class="bank-info">
+            <h4>Chase</h4>
+            <span>大通银行</span>
+          </div>
+        </div>
+
+        <div class="bank-card" onclick="filterBank('Capital One', this)">
+          <img class="bank-logo" src="https://images.unsplash.com/photo-1526304640581-d334cdbbf45e?w=100&auto=format&fit=crop&q=80" alt="Capital One">
+          <div class="bank-info">
+            <h4>Capital One</h4>
+            <span>第一资本</span>
+          </div>
+        </div>
+
+        <div class="bank-card" onclick="filterBank('Citi', this)">
+          <img class="bank-logo" src="https://images.unsplash.com/photo-1559526324-4b87b5e36e44?w=100&auto=format&fit=crop&q=80" alt="Citi">
+          <div class="bank-info">
+            <h4>Citi</h4>
+            <span>花旗银行</span>
+          </div>
+        </div>
+
+        <div class="bank-card" onclick="filterBank('Wells Fargo', this)">
+          <img class="bank-logo" src="https://images.unsplash.com/photo-1556740758-90de374c12ad?w=100&auto=format&fit=crop&q=80" alt="Wells Fargo">
+          <div class="bank-info">
+            <h4>Wells Fargo</h4>
+            <span>富国银行</span>
+          </div>
+        </div>
+
+        <div class="bank-card" onclick="filterBank('Bank of America', this)">
+          <img class="bank-logo" src="https://images.unsplash.com/photo-1589758438368-0ad531db3366?w=100&auto=format&fit=crop&q=80" alt="BoA">
+          <div class="bank-info">
+            <h4>Bank of America</h4>
+            <span>美国银行</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- 当前所选银行的信用卡展示区 -->
+      <h3 id="current-bank-title" style="color:#0284c7; font-size:18px; margin-bottom:15px; border-left:4px solid #0284c7; padding-left:10px;">
+        American Express 旗下信用卡
+      </h3>
+      <div id="cards-container" class="cards-display loading">正在读取信用卡数据...</div>
+    </div>
   </div>
 
   <script>
     const SUPABASE_URL = 'https://dqkkomkwztbyppwnwuif.supabase.co';
-    const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRxa2tvbWt3enRieXBwd253dWlmIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODY2MTcxMjQsImV4cCI6MjEwMjE5MzEyNH0.Q89akcxn-BPLclYFfxpC8kEQEj3Cq5u4-6xI4WqRZ_M';
+    // 替换为您在 Supabase 后台得到的真实 anon public key
+    const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRxa2tvbWt3enRieXB3bnd1aWYiLCJyb2xlIjoiYW5vbiIsImlhdCI6MTczOTQ0NDcyNSwiZXhwIjoy0NTUwMjA3MjV9.REPLACE_WITH_YOUR_ACTUAL_KEY';
     
+    let allCardsData = [];
     const supabaseClient = window.supabase ? window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY) : null;
 
-    async function loadData() {
-      const cardsBox = document.getElementById('cards-container');
-      const postsBox = document.getElementById('posts-container');
+    // 切换一级目录
+    function switchTab(tabId, btn) {
+      document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
+      document.querySelectorAll('.nav-btn').forEach(el => el.classList.remove('active'));
+      document.getElementById(tabId).classList.add('active');
+      btn.classList.add('active');
+    }
 
+    // 切换二级银行
+    function filterBank(bankName, cardEl) {
+      document.querySelectorAll('.bank-card').forEach(el => el.classList.remove('active'));
+      cardEl.classList.add('active');
+      document.getElementById('current-bank-title').innerText = bankName + ' 旗下信用卡';
+
+      const filteredCards = allCardsData.filter(c => c.bank.toLowerCase().includes(bankName.toLowerCase()));
+      renderCards(filteredCards);
+    }
+
+    // 渲染卡片
+    function renderCards(cards) {
+      const cardsBox = document.getElementById('cards-container');
+      if (cards && cards.length > 0) {
+        cardsBox.classList.remove('loading');
+        cardsBox.innerHTML = cards.map(c => `
+          <div class="credit-card">
+            <div class="credit-card-img-wrapper">
+              <img class="credit-card-img" src="${c.image_url || 'https://via.placeholder.com/300x180'}" alt="${c.name}" onerror="this.src='https://via.placeholder.com/260x160?text=Card+Image'">
+            </div>
+            <div class="credit-card-body">
+              <div>
+                <h4 class="credit-card-title">${c.name}</h4>
+                <div class="fee-row"><strong>年费：</strong> $${c.annual_fee}</div>
+                <div class="bonus-box">🔥 开卡奖励：${c.sign_up_bonus}</div>
+              </div>
+              ${c.benefits ? `<div class="benefits-box">🎁 <strong>核心福利：</strong> ${c.benefits}</div>` : ''}
+            </div>
+          </div>
+        `).join('');
+      } else {
+        cardsBox.innerHTML = '<p class="loading">该银行暂无已录入卡片。</p>';
+      }
+    }
+
+    // 初始加载数据
+    async function initData() {
+      const cardsBox = document.getElementById('cards-container');
       if (!supabaseClient) {
-        cardsBox.innerHTML = '<p class="error-msg">Supabase SDK 加载失败，请刷新页面。</p>';
+        cardsBox.innerHTML = '<p class="error-msg">SDK 加载失败，请检查配置。</p>';
         return;
       }
-
       try {
-        // 1. 读取卡片列表
-        const { data: cards, error: cardsErr } = await supabaseClient.from('cards').select('*').order('id', { ascending: true });
-        if (cardsErr) throw cardsErr;
-
-        if (cards && cards.length > 0) {
-          cardsBox.className = 'card-grid';
-          cardsBox.innerHTML = cards.map(c => `
-            <div class="card">
-              ${c.image_url ? `<img class="card-img" src="${c.image_url}" alt="${c.name}" />` : ''}
-              <div class="card-body">
-                <div>
-                  <div class="card-header">
-                    <h3 class="card-title">${c.name}</h3>
-                    <span class="badge">${c.bank}</span>
-                  </div>
-                  <div class="info-row"><strong>年费：</strong> $${c.annual_fee}</div>
-                  <div class="info-row bonus"><strong>🔥 开卡奖励：</strong> ${c.sign_up_bonus}</div>
-                </div>
-                ${c.benefits ? `<div class="benefits"><strong>🎁 刷卡福利：</strong> ${c.benefits}</div>` : ''}
-              </div>
-            </div>
-          `).join('');
-        } else {
-          cardsBox.innerHTML = '<p class="loading">暂无卡片数据。</p>';
-        }
-
-        // 2. 读取文章列表
-        const { data: posts, error: postsErr } = await supabaseClient.from('posts').select('*');
-        if (postsErr) throw postsErr;
-
-        if (posts && posts.length > 0) {
-          postsBox.className = '';
-          postsBox.innerHTML = posts.map(p => `
-            <div style="background:#fff; border:1px solid #e2e8f0; padding:15px; border-radius:10px; margin-bottom:12px;">
-              <span class="post-tag">${p.category}</span>
-              <h4 style="margin:8px 0 4px 0;font-size:16px;">${p.title}</h4>
-              <p style="margin:0;font-size:14px;color:#64748b;">${p.summary}</p>
-            </div>
-          `).join('');
-        } else {
-          postsBox.innerHTML = '<p class="loading">暂无文章数据。</p>';
-        }
-
+        const { data, error } = await supabaseClient.from('cards').select('*').order('id', { ascending: true });
+        if (error) throw error;
+        allCardsData = data || [];
+        // 默认显示 American Express 的卡片
+        filterBank('American Express', document.querySelector('.bank-card'));
       } catch (err) {
         console.error(err);
         cardsBox.innerHTML = `<p class="error-msg">数据读取异常: ${err.message || '未知错误'}</p>`;
       }
     }
 
-    window.addEventListener('DOMContentLoaded', loadData);
+    window.addEventListener('DOMContentLoaded', initData);
   </script>
 </body>
 </html>
