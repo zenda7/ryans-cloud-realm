@@ -9,12 +9,12 @@
             box-sizing: border-box;
             margin: 0;
             padding: 0;
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", sans-serif;
         }
 
         body {
-            background-color: #f2f7fb;
-            color: #333;
+            background-color: #f2f5f9;
+            color: #2d3748;
             display: flex;
             justify-content: center;
             padding: 16px;
@@ -22,92 +22,115 @@
 
         .container {
             width: 100%;
-            max-width: 420px;
+            max-width: 440px;
             display: flex;
             flex-direction: column;
             gap: 16px;
         }
 
-        /* 顶部 Banner */
+        /* 1. 顶部 Header：信用卡平铺背景填满 + 白体文字衬于上层 */
         .banner {
-            background: #ffffff;
+            position: relative;
             border-radius: 20px;
-            padding: 24px 16px;
-            text-align: center;
-            box-shadow: 0 4px 12px rgba(0, 80, 160, 0.05);
+            height: 160px;
+            overflow: hidden;
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.12);
             display: flex;
-            flex-direction: column;
             align-items: center;
-            gap: 10px;
+            justify-content: center;
         }
 
+        .banner-bg {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-image: url('https://images.unsplash.com/photo-1559526324-4b87b5e36e44?q=80&w=800&auto=format&fit=crop');
+            background-size: cover;
+            background-position: center;
+            filter: brightness(0.65) contrast(1.1);
+        }
+
+        .banner-overlay {
+            position: absolute;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: linear-gradient(180deg, rgba(0,0,0,0.2) 0%, rgba(0,0,0,0.6) 100%);
+        }
+
+        .banner-content {
+            position: relative;
+            z-index: 2;
+            text-align: center;
+            padding: 0 16px;
+        }
+
+        /* 去掉云朵，白色加粗黑体 */
         .banner-title {
-            font-size: 20px;
-            font-weight: 700;
-            color: #1677ff;
-            display: flex;
-            align-items: center;
-            gap: 6px;
+            font-size: 24px;
+            font-weight: 900;
+            color: #ffffff;
+            letter-spacing: 0.5px;
+            text-shadow: 0 2px 8px rgba(0, 0, 0, 0.6);
+            margin-bottom: 6px;
         }
 
         .banner-subtitle {
             font-size: 13px;
-            color: #597ef7;
+            color: rgba(255, 255, 255, 0.9);
             font-weight: 500;
+            letter-spacing: 0.5px;
+            text-shadow: 0 1px 4px rgba(0, 0, 0, 0.5);
         }
 
-        /* 导航 Tab */
+        /* 2. 导航 Tab：去掉数字编号 */
         .tabs {
             background: #ffffff;
             border-radius: 16px;
-            padding: 6px;
+            padding: 5px;
             display: flex;
             gap: 6px;
-            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.03);
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.03);
         }
 
         .tab-btn {
             flex: 1;
             border: none;
             background: transparent;
-            padding: 12px 8px;
+            padding: 11px 4px;
             border-radius: 12px;
             font-size: 13px;
-            font-weight: 600;
-            color: #595959;
+            font-weight: 700;
+            color: #64748b;
             cursor: pointer;
+            transition: all 0.25s ease;
             text-align: center;
         }
 
         .tab-btn.active {
             background: #007aff;
             color: #ffffff;
-            box-shadow: 0 4px 10px rgba(0, 122, 255, 0.3);
+            box-shadow: 0 4px 12px rgba(0, 122, 255, 0.28);
         }
 
-        /* 提示文字 & 返回按钮 */
-        .tip-text {
-            font-size: 13px;
-            color: #8c8c8c;
-            padding: 0 4px;
-        }
-
+        /* 返回按钮 */
         .back-bar {
             display: none;
             align-items: center;
             gap: 6px;
             color: #007aff;
-            font-weight: 600;
+            font-weight: 700;
             font-size: 14px;
             cursor: pointer;
-            padding: 4px 0;
+            padding: 2px 4px;
+            width: fit-content;
         }
 
         .back-bar.visible {
             display: flex;
         }
 
-        /* 银行列表区域 */
+        /* 3. 银行列表 */
         .bank-list {
             display: flex;
             flex-direction: column;
@@ -116,14 +139,15 @@
 
         .bank-card {
             background: #ffffff;
-            border: 1.5px solid #e6f0fa;
+            border: 1.5px solid #eef2f6;
             border-radius: 16px;
-            padding: 16px;
+            padding: 14px 16px;
             display: flex;
             align-items: center;
-            gap: 16px;
+            gap: 14px;
             cursor: pointer;
-            transition: all 0.3s ease;
+            transition: all 0.3s cubic-bezier(0.25, 1, 0.5, 1);
+            box-shadow: 0 2px 6px rgba(0,0,0,0.015);
         }
 
         .bank-card:active {
@@ -131,47 +155,58 @@
         }
 
         .bank-logo {
-            width: 48px;
-            height: 48px;
+            width: 44px;
+            height: 44px;
             border-radius: 12px;
-            object-fit: cover;
-            background: #f0f5ff;
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 20px;
+            font-weight: 800;
+            font-size: 15px;
+            color: #ffffff;
+            flex-shrink: 0;
+            box-shadow: 0 3px 8px rgba(0,0,0,0.08);
         }
 
+        .bg-capone { background: linear-gradient(135deg, #003a70, #005696); }
+        .bg-amex { background: linear-gradient(135deg, #0077d6, #00a0e9); }
+        .bg-chase { background: linear-gradient(135deg, #117aca, #0a4d80); }
+        .bg-wf { background: linear-gradient(135deg, #d71e28, #a30e15); }
+        .bg-citi { background: linear-gradient(135deg, #003b70, #0066b2); }
+        .bg-hsbc { background: linear-gradient(135deg, #db0011, #9e000c); }
+        .bg-boa { background: linear-gradient(135deg, #e31837, #00529b); }
+
         .bank-info .en-name {
-            font-size: 16px;
+            font-size: 15px;
             font-weight: 700;
-            color: #1f1f1f;
+            color: #1a202c;
+            line-height: 1.2;
         }
 
         .bank-info .zh-name {
             font-size: 12px;
-            color: #8c8c8c;
+            color: #718096;
+            margin-top: 2px;
         }
 
-        /* 选中态：隐藏其他银行，只留当前点击项 */
         .bank-card.hidden {
             display: none !important;
         }
 
         .bank-card.selected-active {
             border-color: #007aff;
-            box-shadow: 0 4px 12px rgba(0, 122, 255, 0.12);
+            box-shadow: 0 4px 14px rgba(0, 122, 255, 0.12);
             cursor: default;
         }
 
-        /* 信用卡展示区 */
+        /* 4. 设计感卡片详情展区 */
         .cards-container {
             display: none;
             flex-direction: column;
-            gap: 12px;
+            gap: 16px;
             opacity: 0;
             transform: translateY(12px);
-            transition: all 0.3s ease;
+            transition: opacity 0.35s ease, transform 0.35s ease;
         }
 
         .cards-container.visible {
@@ -180,119 +215,366 @@
             transform: translateY(0);
         }
 
-        .card-item {
+        .card-box {
             background: #ffffff;
-            border-radius: 14px;
-            padding: 14px 16px;
+            border-radius: 18px;
+            padding: 16px;
+            box-shadow: 0 4px 16px rgba(0, 0, 0, 0.04);
+            border: 1px solid #edf2f7;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .card-header {
             display: flex;
             align-items: center;
             gap: 12px;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.03);
-            border: 1px solid #f0f0f0;
         }
 
         .card-face {
-            width: 52px;
-            height: 33px;
-            background: linear-gradient(135deg, #1890ff, #096dd9);
-            border-radius: 6px;
+            width: 68px;
+            height: 43px;
+            border-radius: 8px;
             flex-shrink: 0;
+            box-shadow: 0 3px 8px rgba(0,0,0,0.18);
+            position: relative;
+            overflow: hidden;
+            background-size: cover;
+            background-position: center;
+            border: 1px solid rgba(255,255,255,0.2);
         }
 
-        .card-details {
+        .card-face::before {
+            content: '';
+            position: absolute;
+            top: 12px; left: 8px;
+            width: 10px; height: 8px;
+            background: #e2b042;
+            border-radius: 2px;
+            box-shadow: 0 0 2px rgba(0,0,0,0.2);
+        }
+
+        .card-main-info {
             flex: 1;
         }
 
-        .card-name {
-            font-size: 14px;
-            font-weight: 600;
-            color: #262626;
+        .card-title {
+            font-size: 15px;
+            font-weight: 700;
+            color: #1a202c;
+            line-height: 1.3;
         }
 
-        .card-sub {
-            font-size: 12px;
-            color: #8c8c8c;
-        }
-
-        .card-badge {
+        .fee-badge {
+            display: inline-block;
+            margin-top: 3px;
             font-size: 11px;
-            background: #e6f7ff;
-            color: #1890ff;
+            font-weight: 700;
             padding: 2px 8px;
             border-radius: 6px;
+            width: fit-content;
+        }
+
+        .fee-free { background: #e6fffa; color: #047857; }
+        .fee-paid { background: #fff7ed; color: #c2410c; }
+
+        .card-body {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            background: #f8fafc;
+            border-radius: 12px;
+            padding: 10px 12px;
+        }
+
+        .info-row {
+            display: flex;
+            font-size: 12px;
+            line-height: 1.4;
+        }
+
+        .info-label {
+            font-weight: 700;
+            color: #475569;
+            width: 72px;
+            flex-shrink: 0;
+        }
+
+        .info-value {
+            color: #334155;
+            flex: 1;
+        }
+
+        .highlight-text {
+            color: #007aff;
+            font-weight: 600;
         }
     </style>
 </head>
 <body>
 
     <div class="container">
-        <!-- 顶部个人 Header -->
+        <!-- 1. Header -->
         <div class="banner">
-            <div class="banner-title">☁️ 莱恩的云上国度</div>
-            <div class="banner-subtitle">云居民的美国信用卡情报库</div>
+            <div class="banner-bg"></div>
+            <div class="banner-overlay"></div>
+            <div class="banner-content">
+                <div class="banner-title">莱恩的云上国度</div>
+                <div class="banner-subtitle">云居民的美国信用卡情报库</div>
+            </div>
         </div>
 
-        <!-- 导航选项卡 -->
+        <!-- 2. Tabs（无数字编号） -->
         <div class="tabs">
-            <button class="tab-btn">1. 必要准备</button>
-            <button class="tab-btn">2. 申卡指南</button>
-            <button class="tab-btn active">3. 卡片大全</button>
+            <button class="tab-btn">必要准备</button>
+            <button class="tab-btn">申卡指南</button>
+            <button class="tab-btn active">卡片大全</button>
         </div>
 
-        <!-- 返回按钮与提示文案 -->
+        <!-- 返回按钮 -->
         <div class="back-bar" id="backBar" onclick="goBackToBanks()">
-            <span>← 返回选择其他银行</span>
+            <span>← 返回所有银行</span>
         </div>
-        <div class="tip-text" id="tipText">👇 **点击下方银行，查看对应旗下的信用卡列表：**</div>
 
-        <!-- 银行列表 -->
+        <!-- 3. 银行列表 -->
         <div class="bank-list" id="bankList">
-            <!-- Amex -->
+            <div class="bank-card" onclick="selectBank(this, 'capone')">
+                <div class="bank-logo bg-capone">C1</div>
+                <div class="bank-info">
+                    <div class="en-name">Capital One</div>
+                    <div class="zh-name">第一资本银行</div>
+                </div>
+            </div>
+
             <div class="bank-card" onclick="selectBank(this, 'amex')">
-                <div class="bank-logo">💳</div>
+                <div class="bank-logo bg-amex">AX</div>
                 <div class="bank-info">
                     <div class="en-name">American Express</div>
                     <div class="zh-name">美国运通</div>
                 </div>
             </div>
 
-            <!-- Chase -->
             <div class="bank-card" onclick="selectBank(this, 'chase')">
-                <div class="bank-logo">🏦</div>
+                <div class="bank-logo bg-chase">CH</div>
                 <div class="bank-info">
                     <div class="en-name">Chase</div>
                     <div class="zh-name">大通银行</div>
                 </div>
             </div>
 
-            <!-- Capital One -->
-            <div class="bank-card" onclick="selectBank(this, 'capone')">
-                <div class="bank-logo">🌐</div>
+            <div class="bank-card" onclick="selectBank(this, 'wellsfargo')">
+                <div class="bank-logo bg-wf">WF</div>
                 <div class="bank-info">
-                    <div class="en-name">Capital One</div>
-                    <div class="zh-name">第一资本银行</div>
+                    <div class="en-name">Wells Fargo</div>
+                    <div class="zh-name">富国银行</div>
+                </div>
+            </div>
+
+            <div class="bank-card" onclick="selectBank(this, 'citi')">
+                <div class="bank-logo bg-citi">CI</div>
+                <div class="bank-info">
+                    <div class="en-name">Citi</div>
+                    <div class="zh-name">花旗银行</div>
+                </div>
+            </div>
+
+            <div class="bank-card" onclick="selectBank(this, 'hsbcus')">
+                <div class="bank-logo bg-hsbc">HS</div>
+                <div class="bank-info">
+                    <div class="en-name">HSBC US</div>
+                    <div class="zh-name">汇丰美国</div>
+                </div>
+            </div>
+
+            <div class="bank-card" onclick="selectBank(this, 'boa')">
+                <div class="bank-logo bg-boa">BA</div>
+                <div class="bank-info">
+                    <div class="en-name">Bank of America</div>
+                    <div class="zh-name">美国银行</div>
                 </div>
             </div>
         </div>
 
-        <!-- 展开的信用卡列表区域 -->
+        <!-- 4. 信用卡详情列表 -->
         <div class="cards-container" id="cardsContainer"></div>
     </div>
 
     <script>
-        // 信用卡数据
         const cardData = {
+            capone: [
+                {
+                    name: "Capital One Venture X",
+                    fee: "$395 / 年",
+                    isFree: false,
+                    bonus: "开卡3个月内消费 $4,000 送 75,000 Venture 积分",
+                    rewards: "所有消费 2x 积分；Capital One Travel 订酒店/租车 10x，机票 5x；每年 $300 预订报销 + 10,000 周年奖励积分（免费赠送休息室）",
+                    gradient: "linear-gradient(135deg, #0d233a, #204060)"
+                },
+                {
+                    name: "Capital One Venture One",
+                    fee: "年费 $0",
+                    isFree: true,
+                    bonus: "开卡3个月内消费 $500 送 20,000 积分",
+                    rewards: "所有消费 1.5x 积分；无境外消费手续费（FTF），入门级旅行好卡",
+                    gradient: "linear-gradient(135deg, #4a6572, #34495e)"
+                },
+                {
+                    name: "Capital One SavorOne",
+                    fee: "年费 $0",
+                    isFree: true,
+                    bonus: "开卡3个月内消费 $500 返现 $200",
+                    rewards: "餐饮、超市、娱乐及指定流媒体消费 3% 返现；无境外消费手续费",
+                    gradient: "linear-gradient(135deg, #e67e22, #d35400)"
+                },
+                {
+                    name: "Capital One Quicksilver",
+                    fee: "年费 $0",
+                    isFree: true,
+                    bonus: "开卡3个月内消费 $500 返现 $200",
+                    rewards: "无脑所有消费 1.5% 返现，适合新手积累信用",
+                    gradient: "linear-gradient(135deg, #bdc3c7, #7f8c8d)"
+                }
+            ],
             amex: [
-                { name: "Hilton Honors", desc: "免年费小白卡 / 希尔顿入门", tag: "免年费" },
-                { name: "Gold Card", desc: "餐饮超市 4x 积分神器", tag: "消费必选" },
-                { name: "Platinum Card", desc: "顶级机场休息室权益", tag: "高端卡" }
+                {
+                    name: "Amex Hilton Honors",
+                    fee: "年费 $0 (小白卡)",
+                    isFree: true,
+                    bonus: "开卡6个月内消费 $2,000 送 100,000 希尔顿积分",
+                    rewards: "希尔顿旗下消费 7x 积分；餐饮、超市、加油 5x 积分；送 Hilton 银卡会籍，无 FTF",
+                    gradient: "linear-gradient(135deg, #003366, #006699)"
+                },
+                {
+                    name: "Amex Gold Card",
+                    fee: "$325 / 年",
+                    isFree: false,
+                    bonus: "开卡6个月内消费 $6,000 送 60,000 ~ 90,000 MR 积分",
+                    rewards: "全球餐厅及美国超市 4x MR 积分；机票 3x；每年 $120 Dining Credit + $120 Uber Cash",
+                    gradient: "linear-gradient(135deg, #d4af37, #aa7c11)"
+                },
+                {
+                    name: "Amex Platinum Card",
+                    fee: "$695 / 年",
+                    isFree: false,
+                    bonus: "开卡6个月内消费 $8,000 送 80,000 ~ 175,000 MR 积分",
+                    rewards: "机票及预订酒店 5x 积分；百夫长休息室 + Priority Pass 权益；每年 $200 酒店报销 + $200 航空报销",
+                    gradient: "linear-gradient(135deg, #e0e0e0, #8a8a8a)"
+                },
+                {
+                    name: "Amex Blue Cash Everyday (BCE)",
+                    fee: "年费 $0",
+                    isFree: true,
+                    bonus: "开卡6个月内消费 $2,000 返现 $200",
+                    rewards: "美国网购、超市、加油均享 3% 返现；每月 $7 Disney Bundle 报销",
+                    gradient: "linear-gradient(135deg, #2980b9, #2c3e50)"
+                }
             ],
             chase: [
-                { name: "Sapphire Preferred", desc: "经典 UR 积分入门卡", tag: "热门推荐" },
-                { name: "Freedom Unlimited", desc: "无脑 1.5% 返现卡", tag: "免年费" }
+                {
+                    name: "Chase Sapphire Preferred (CSP)",
+                    fee: "$95 / 年",
+                    isFree: false,
+                    bonus: "开卡3个月内消费 $4,000 送 60,000 ~ 75,000 UR 积分",
+                    rewards: "餐饮及指定流媒体 3x，旅行消费 2x；每年 $50 酒店报销；积分可 1:1 转等知名航司/酒店",
+                    gradient: "linear-gradient(135deg, #1e3c72, #2a5298)"
+                },
+                {
+                    name: "Chase Sapphire Reserve (CSR)",
+                    fee: "$550 / 年",
+                    isFree: false,
+                    bonus: "开卡3个月内消费 $4,000 送 60,000 UR 积分",
+                    rewards: "每年 $300 旅行无脑报销；旅行及餐饮 3x 积分；免费机场 Priority Pass 休息室",
+                    gradient: "linear-gradient(135deg, #2c3e50, #000000)"
+                },
+                {
+                    name: "Chase Freedom Unlimited (CFU)",
+                    fee: "年费 $0",
+                    isFree: true,
+                    bonus: "开卡3个月内消费 $500 返现 $150",
+                    rewards: "餐饮及药房 3% 返现；无脑所有消费 1.5% 返现；Chase Portal 旅行 5%",
+                    gradient: "linear-gradient(135deg, #27ae60, #117aca)"
+                },
+                {
+                    name: "Chase Freedom Flex (CFF)",
+                    fee: "年费 $0",
+                    isFree: true,
+                    bonus: "开卡3个月内消费 $500 返现 $200",
+                    rewards: "每季度特定类别 5% 轮换返现（上限 $1,500）；餐饮及药房 3%",
+                    gradient: "linear-gradient(135deg, #16a085, #2980b9)"
+                }
             ],
-            capone: [
-                { name: "Venture X", desc: "高性价比高端旅行卡", tag: "等效负年费" }
+            wellsfargo: [
+                {
+                    name: "Wells Fargo Autograph",
+                    fee: "年费 $0",
+                    isFree: true,
+                    bonus: "开卡3个月内消费 $1,000 送 20,000 积分（价值 $200）",
+                    rewards: "餐饮、旅行、加油、交通、流媒体及手机账单 均享 3x 无上限积分；免费手机保险",
+                    gradient: "linear-gradient(135deg, #c0392b, #8e44ad)"
+                },
+                {
+                    name: "Wells Fargo Active Cash",
+                    fee: "年费 $0",
+                    isFree: true,
+                    bonus: "开卡3个月内消费 $500 返现 $200",
+                    rewards: "所有消费无脑 2% 现金返现，无类别限制；送最高 $600 手机保险",
+                    gradient: "linear-gradient(135deg, #d35400, #c0392b)"
+                }
+            ],
+            citi: [
+                {
+                    name: "Citi Custom Cash",
+                    fee: "年费 $0",
+                    isFree: true,
+                    bonus: "开卡3个月内消费 $1,500 返现 $200",
+                    rewards: "每月最高消费类别自动享 5% 返现（餐饮/加油/超市/旅行等，前 $500 消费）",
+                    gradient: "linear-gradient(135deg, #003b70, #0088cc)"
+                },
+                {
+                    name: "Citi Double Cash",
+                    fee: "年费 $0",
+                    isFree: true,
+                    bonus: "开卡3个月内消费 $1,500 返现 $200",
+                    rewards: "所有消费 2% 返现（刷卡 1% + 关账还款 1%）",
+                    gradient: "linear-gradient(135deg, #2980b9, #3498db)"
+                },
+                {
+                    name: "Citi Strata Premier",
+                    fee: "$95 / 年",
+                    isFree: false,
+                    bonus: "开卡3个月内消费 $4,000 送 70,000 ~ 75,000 TYP 积分",
+                    rewards: "餐厅、超市、加油站、酒店及机票消费 3x 积分；每年 $100 酒店折抵",
+                    gradient: "linear-gradient(135deg, #1f4068, #162447)"
+                }
+            ],
+            hsbcus: [
+                {
+                    name: "HSBC Premier World Elite Mastercard",
+                    fee: "$395 / 年",
+                    isFree: false,
+                    bonus: "开卡3个月内消费 $4,000 送 50,000 奖励积分",
+                    rewards: "旅行消费 3x 积分，其他消费 1.5x；每年 $100 TSA/Global Entry 报销；免费 Boingo Wi-Fi",
+                    gradient: "linear-gradient(135deg, #db0011, #4a0005)"
+                }
+            ],
+            boa: [
+                {
+                    name: "BofA Customized Cash Rewards",
+                    fee: "年费 $0",
+                    isFree: true,
+                    bonus: "开卡90天内消费 $1,000 返现 $200",
+                    rewards: "自选类别 3% 返现（网购/餐饮/旅行/加油等）；高级客户加成最高可达 5.25%",
+                    gradient: "linear-gradient(135deg, #e31837, #990011)"
+                },
+                {
+                    name: "BofA Travel Rewards",
+                    fee: "年费 $0",
+                    isFree: true,
+                    bonus: "开卡90天内消费 $1,000 送 25,000 积分（可报销 $250）",
+                    rewards: "所有消费无脑 1.5 积分；无 FTF；高级会员最高加成可达 2.62 积分/美元",
+                    gradient: "linear-gradient(135deg, #00529b, #002f6c)"
+                }
             ]
         };
 
@@ -302,11 +584,8 @@
             if (isSelected) return;
             isSelected = true;
 
-            // 1. 隐藏提示文本，显示返回按钮
-            document.getElementById('tipText').style.display = 'none';
             document.getElementById('backBar').classList.add('visible');
 
-            // 2. 隐藏其他银行，当前选中的银行保留在最上方
             const allBanks = document.querySelectorAll('.bank-card');
             allBanks.forEach(card => {
                 if (card === element) {
@@ -316,18 +595,28 @@
                 }
             });
 
-            // 3. 渲染并显示对应卡片
             const container = document.getElementById('cardsContainer');
             const list = cardData[bankKey] || [];
             
             container.innerHTML = list.map(c => `
-                <div class="card-item">
-                    <div class="card-face"></div>
-                    <div class="card-details">
-                        <div class="card-name">${c.name}</div>
-                        <div class="card-sub">${c.desc}</div>
+                <div class="card-box">
+                    <div class="card-header">
+                        <div class="card-face" style="background: ${c.gradient}"></div>
+                        <div class="card-main-info">
+                            <div class="card-title">${c.name}</div>
+                            <span class="fee-badge ${c.isFree ? 'fee-free' : 'fee-paid'}">${c.fee}</span>
+                        </div>
                     </div>
-                    <div class="card-badge">${c.tag}</div>
+                    <div class="card-body">
+                        <div class="info-row">
+                            <div class="info-label">🎁 开卡奖励:</div>
+                            <div class="info-value highlight-text">${c.bonus}</div>
+                        </div>
+                        <div class="info-row">
+                            <div class="info-label">💳 刷卡福利:</div>
+                            <div class="info-value">${c.rewards}</div>
+                        </div>
+                    </div>
                 </div>
             `).join('');
 
@@ -338,7 +627,6 @@
             if (!isSelected) return;
             isSelected = false;
 
-            document.getElementById('tipText').style.display = 'block';
             document.getElementById('backBar').classList.remove('visible');
 
             const container = document.getElementById('cardsContainer');
