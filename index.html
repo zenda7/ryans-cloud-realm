@@ -140,10 +140,11 @@
             background: #ffffff;
             border: 1.5px solid #eef2f6;
             border-radius: 16px;
-            padding: 14px 16px;
+            /* 严格对齐：左边距24px让图标起跑线与卡片起跑线一致，gap 50px 确保文字与下方文字对齐 */
+            padding: 14px 24px;
             display: flex;
             align-items: center;
-            gap: 14px;
+            gap: 50px;
             cursor: pointer;
             transition: all 0.3s cubic-bezier(0.25, 1, 0.5, 1);
             box-shadow: 0 2px 6px rgba(0,0,0,0.015);
@@ -217,7 +218,8 @@
         .card-box {
             background: #ffffff;
             border-radius: 18px;
-            padding: 16px;
+            /* 设定基础内边距 */
+            padding: 16px 12px;
             box-shadow: 0 4px 16px rgba(0, 0, 0, 0.04);
             border: 1px solid #edf2f7;
             display: flex;
@@ -228,13 +230,16 @@
         .card-header {
             display: flex;
             align-items: center;
+            /* 让卡片图的起点向右偏移 12px (结合父容器的12px, 达到总距24px对齐) */
+            padding: 0 12px;
+            /* 控制卡图和标题的距离 */
             gap: 12px;
-            padding: 0 2px;
         }
 
         .card-face {
-            width: 68px;
-            height: 43px;
+            /* 放大卡片图，并让宽度等同于下方标签宽度，右侧天然对齐 */
+            width: 82px;
+            height: 52px;
             border-radius: 8px;
             flex-shrink: 0;
             box-shadow: 0 3px 8px rgba(0,0,0,0.18);
@@ -245,11 +250,12 @@
             border: 1px solid rgba(255,255,255,0.2);
         }
 
+        /* 随卡片放大，微调芯片位置 */
         .card-face::before {
             content: '';
             position: absolute;
-            top: 12px; left: 8px;
-            width: 10px; height: 8px;
+            top: 14px; left: 10px;
+            width: 12px; height: 9px;
             background: #e2b042;
             border-radius: 2px;
             box-shadow: 0 0 2px rgba(0,0,0,0.2);
@@ -285,20 +291,22 @@
             gap: 8px;
             background: #f8fafc;
             border-radius: 12px;
-            padding: 10px 10px;
+            /* 内边距12px，让文字区域整体内缩，和上方排版对齐 */
+            padding: 12px;
         }
 
         .info-row {
             display: flex;
             font-size: 12px;
             line-height: 1.4;
-            gap: 6px;
+            /* 严格控制标签和详情文字的间距为 12px，以和上方排版对其 */
+            gap: 12px;
         }
 
-        /* 标签固定宽度设为 82px，确保文字单行不折行 */
         .info-label {
             font-weight: 700;
             color: #475569;
+            /* 保持标签宽度为 82px，这与上面卡片图片的 82px 宽度完美垂直对齐 */
             width: 82px;
             flex-shrink: 0;
         }
@@ -403,7 +411,6 @@
     </div>
 
     <script>
-        // 已去除了所有卡名开头的银行名称前缀
         const cardData = {
             capone: [
                 {
