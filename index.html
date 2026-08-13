@@ -4,21 +4,30 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>莱恩的云上国度 | Ryan's Cloud Realm</title>
-  <!-- 引入 Supabase 官方 CDN -->
+  <!-- 引入 Supabase 官方 SDK -->
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <style>
     body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; background-color: #f8fafc; color: #1e293b; margin: 0; padding: 20px; }
-    .container { max-width: 800px; margin: 0 auto; }
+    .container { max-width: 900px; margin: 0 auto; }
     header { border-bottom: 2px solid #0284c7; padding-bottom: 15px; margin-bottom: 30px; }
     h1 { color: #0284c7; margin: 0; font-size: 24px; }
     .subtitle { color: #64748b; font-size: 14px; margin-top: 5px; }
     section { margin-bottom: 35px; }
-    h2 { border-left: 4px solid #0284c7; padding-left: 10px; font-size: 18px; margin-bottom: 15px; }
-    .card { border: 1px solid #e2e8f0; padding: 15px; border-radius: 12px; background: #fff; margin-bottom: 15px; box-shadow: 0 2px 4px rgba(0,0,0,0.03); }
-    .card h3 { margin: 0 0 8px 0; font-size: 16px; display: flex; justify-content: space-between; align-items: center; }
-    .badge { font-size: 12px; background: #f1f5f9; padding: 2px 8px; border-radius: 4px; color: #475569; font-weight: normal; }
-    .bonus { color: #0284c7; font-weight: bold; }
-    .post-tag { font-size: 12px; background: #e0f2fe; color: #0369a1; padding: 2px 6px; border-radius: 4px; font-weight: bold; }
+    h2 { border-left: 4px solid #0284c7; padding-left: 10px; font-size: 18px; margin-bottom: 20px; }
+    
+    /* 信用卡卡片布局 */
+    .card-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(380px, 1fr)); gap: 20px; }
+    .card { border: 1px solid #e2e8f0; border-radius: 12px; background: #fff; overflow: hidden; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05); display: flex; flex-direction: column; }
+    .card-img { width: 100%; height: 160px; object-fit: cover; background-color: #cbd5e1; }
+    .card-body { padding: 18px; flex: 1; display: flex; flex-direction: column; justify-content: space-between; }
+    .card-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 10px; }
+    .card-title { font-size: 16px; font-weight: bold; margin: 0; color: #0f172a; }
+    .badge { font-size: 12px; background: #e0f2fe; color: #0369a1; padding: 3px 8px; border-radius: 6px; font-weight: 600; white-space: nowrap; }
+    .info-row { font-size: 14px; margin: 4px 0; }
+    .bonus { color: #d97706; font-weight: bold; }
+    .benefits { font-size: 13px; color: #475569; background: #f8fafc; padding: 10px; border-radius: 8px; margin-top: 10px; border-left: 3px solid #38bdf8; }
+
+    .post-tag { font-size: 12px; background: #f1f5f9; color: #475569; padding: 2px 6px; border-radius: 4px; font-weight: bold; }
     .loading { color: #94a3b8; font-size: 14px; }
     .error-msg { color: #ef4444; font-size: 14px; }
   </style>
@@ -27,25 +36,24 @@
   <div class="container">
     <header>
       <h1>☁️ 莱恩的云上国度</h1>
-      <div class="subtitle">Ryan's Cloud Realm - 美国信用卡资讯与情报站</div>
+      <div class="subtitle">Ryan's Cloud Realm - 全球与美国信用卡资讯与情报数据库</div>
     </header>
 
     <section>
-      <h2>💳 热门信用卡列表</h2>
-      <div id="cards-container" class="loading">正在读取云端卡片数据...</div>
+      <h2>💳 热门信用卡大全 (Amex, Chase, C1, Citi, Wells Fargo, BoA, HSBC)</h2>
+      <div id="cards-container" class="loading">正在拉取云端信用卡数据库...</div>
     </section>
 
     <section>
-      <h2>📰 最新资讯与最强攻略</h2>
+      <h2>📰 申卡攻略与美卡指南</h2>
       <div id="posts-container" class="loading">正在读取云端文章...</div>
     </section>
   </div>
 
   <script>
     const SUPABASE_URL = 'https://dqkkomkwztbyppwnwuif.supabase.co';
-    const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRxa2tvbWt3enRieXBwd253dWlmIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODY2MTcxMjQsImV4cCI6MjEwMjE5MzEyNH0.Q89akcxn-BPLclYFfxpC8kEQEj3Cq5u4-6xI4WqRZ_M';
+    const SUPABASE_KEY = 'Sb_publishable_S97MtkJ9sOuZC-sZ0-OKHg_tcxGJxbJ';
     
-    // 使用标准的 client 初始化
     const supabaseClient = window.supabase ? window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY) : null;
 
     async function loadData() {
@@ -53,39 +61,48 @@
       const postsBox = document.getElementById('posts-container');
 
       if (!supabaseClient) {
-        cardsBox.innerHTML = '<p class="error-msg">Supabase SDK 加载失败，请刷新页面重试。</p>';
+        cardsBox.innerHTML = '<p class="error-msg">Supabase SDK 加载失败，请刷新页面。</p>';
         return;
       }
 
       try {
-        // 1. 读取卡片数据
-        const { data: cards, error: cardsErr } = await supabaseClient.from('cards').select('*');
+        // 1. 读取卡片列表
+        const { data: cards, error: cardsErr } = await supabaseClient.from('cards').select('*').order('id', { ascending: true });
         if (cardsErr) throw cardsErr;
 
         if (cards && cards.length > 0) {
-          cardsBox.className = '';
+          cardsBox.className = 'card-grid';
           cardsBox.innerHTML = cards.map(c => `
             <div class="card">
-              <h3>${c.name} <span class="badge">${c.bank}</span></h3>
-              <p style="margin:4px 0;font-size:14px;"><strong>年费：</strong> $${c.annual_fee}</p>
-              <p style="margin:4px 0;font-size:14px;" class="bonus"><strong>🔥 开卡奖励：</strong> ${c.sign_up_bonus}</p>
+              ${c.image_url ? `<img class="card-img" src="${c.image_url}" alt="${c.name}" />` : ''}
+              <div class="card-body">
+                <div>
+                  <div class="card-header">
+                    <h3 class="card-title">${c.name}</h3>
+                    <span class="badge">${c.bank}</span>
+                  </div>
+                  <div class="info-row"><strong>年费：</strong> $${c.annual_fee}</div>
+                  <div class="info-row bonus"><strong>🔥 开卡奖励：</strong> ${c.sign_up_bonus}</div>
+                </div>
+                ${c.benefits ? `<div class="benefits"><strong>🎁 刷卡福利：</strong> ${c.benefits}</div>` : ''}
+              </div>
             </div>
           `).join('');
         } else {
           cardsBox.innerHTML = '<p class="loading">暂无卡片数据。</p>';
         }
 
-        // 2. 读取文章数据
+        // 2. 读取文章列表
         const { data: posts, error: postsErr } = await supabaseClient.from('posts').select('*');
         if (postsErr) throw postsErr;
 
         if (posts && posts.length > 0) {
           postsBox.className = '';
           postsBox.innerHTML = posts.map(p => `
-            <div style="border-bottom:1px solid #f1f5f9; padding-bottom:12px; margin-bottom:12px;">
+            <div style="background:#fff; border:1px solid #e2e8f0; padding:15px; border-radius:10px; margin-bottom:12px;">
               <span class="post-tag">${p.category}</span>
-              <h4 style="margin:6px 0 4px 0;font-size:15px;">${p.title}</h4>
-              <p style="margin:0;font-size:13px;color:#64748b;">${p.summary}</p>
+              <h4 style="margin:8px 0 4px 0;font-size:16px;">${p.title}</h4>
+              <p style="margin:0;font-size:14px;color:#64748b;">${p.summary}</p>
             </div>
           `).join('');
         } else {
@@ -98,7 +115,6 @@
       }
     }
 
-    // 页面加载完成后触发
     window.addEventListener('DOMContentLoaded', loadData);
   </script>
 </body>
