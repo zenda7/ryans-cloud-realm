@@ -225,7 +225,6 @@
             gap: 12px;
         }
 
-        /* 优化对齐：头部微调 */
         .card-header {
             display: flex;
             align-items: center;
@@ -280,28 +279,27 @@
         .fee-free { background: #e6fffa; color: #047857; }
         .fee-paid { background: #fff7ed; color: #c2410c; }
 
-        /* 优化对齐：减少内边距，方便标签靠左 */
         .card-body {
             display: flex;
             flex-direction: column;
             gap: 8px;
             background: #f8fafc;
             border-radius: 12px;
-            padding: 10px 8px;
+            padding: 10px 10px;
         }
 
-        /* 核心修改：设定 gap 和固定宽度，让右侧完美对齐上方的卡片名称 */
         .info-row {
             display: flex;
             font-size: 12px;
             line-height: 1.4;
-            gap: 8px;
+            gap: 6px;
         }
 
+        /* 标签固定宽度设为 82px，确保文字单行不折行 */
         .info-label {
             font-weight: 700;
             color: #475569;
-            width: 68px;
+            width: 82px;
             flex-shrink: 0;
         }
 
@@ -405,10 +403,11 @@
     </div>
 
     <script>
+        // 已去除了所有卡名开头的银行名称前缀
         const cardData = {
             capone: [
                 {
-                    name: "Capital One Venture X",
+                    name: "Venture X",
                     fee: "$395 / 年",
                     isFree: false,
                     bonus: "开卡3个月内消费 $4,000 送 75,000 Venture 积分",
@@ -416,7 +415,7 @@
                     gradient: "linear-gradient(135deg, #0d233a, #204060)"
                 },
                 {
-                    name: "Capital One Venture One",
+                    name: "Venture One",
                     fee: "年费 $0",
                     isFree: true,
                     bonus: "开卡3个月内消费 $500 送 20,000 积分",
@@ -424,7 +423,7 @@
                     gradient: "linear-gradient(135deg, #4a6572, #34495e)"
                 },
                 {
-                    name: "Capital One SavorOne",
+                    name: "SavorOne",
                     fee: "年费 $0",
                     isFree: true,
                     bonus: "开卡3个月内消费 $500 返现 $200",
@@ -432,7 +431,7 @@
                     gradient: "linear-gradient(135deg, #e67e22, #d35400)"
                 },
                 {
-                    name: "Capital One Quicksilver",
+                    name: "Quicksilver",
                     fee: "年费 $0",
                     isFree: true,
                     bonus: "开卡3个月内消费 $500 返现 $200",
@@ -442,7 +441,7 @@
             ],
             amex: [
                 {
-                    name: "Amex Hilton Honors",
+                    name: "Hilton Honors",
                     fee: "年费 $0 (小白卡)",
                     isFree: true,
                     bonus: "开卡6个月内消费 $2,000 送 100,000 希尔顿积分",
@@ -450,7 +449,7 @@
                     gradient: "linear-gradient(135deg, #003366, #006699)"
                 },
                 {
-                    name: "Amex Gold Card",
+                    name: "Gold Card",
                     fee: "$325 / 年",
                     isFree: false,
                     bonus: "开卡6个月内消费 $6,000 送 60,000 ~ 90,000 MR 积分",
@@ -458,7 +457,7 @@
                     gradient: "linear-gradient(135deg, #d4af37, #aa7c11)"
                 },
                 {
-                    name: "Amex Platinum Card",
+                    name: "Platinum Card",
                     fee: "$695 / 年",
                     isFree: false,
                     bonus: "开卡6个月内消费 $8,000 送 80,000 ~ 175,000 MR 积分",
@@ -466,7 +465,7 @@
                     gradient: "linear-gradient(135deg, #e0e0e0, #8a8a8a)"
                 },
                 {
-                    name: "Amex Blue Cash Everyday (BCE)",
+                    name: "Blue Cash Everyday (BCE)",
                     fee: "年费 $0",
                     isFree: true,
                     bonus: "开卡6个月内消费 $2,000 返现 $200",
@@ -476,7 +475,7 @@
             ],
             chase: [
                 {
-                    name: "Chase Sapphire Preferred (CSP)",
+                    name: "Sapphire Preferred (CSP)",
                     fee: "$95 / 年",
                     isFree: false,
                     bonus: "开卡3个月内消费 $4,000 送 60,000 ~ 75,000 UR 积分",
@@ -484,7 +483,7 @@
                     gradient: "linear-gradient(135deg, #1e3c72, #2a5298)"
                 },
                 {
-                    name: "Chase Sapphire Reserve (CSR)",
+                    name: "Sapphire Reserve (CSR)",
                     fee: "$550 / 年",
                     isFree: false,
                     bonus: "开卡3个月内消费 $4,000 送 60,000 UR 积分",
@@ -492,7 +491,7 @@
                     gradient: "linear-gradient(135deg, #2c3e50, #000000)"
                 },
                 {
-                    name: "Chase Freedom Unlimited (CFU)",
+                    name: "Freedom Unlimited (CFU)",
                     fee: "年费 $0",
                     isFree: true,
                     bonus: "开卡3个月内消费 $500 返现 $150",
@@ -500,7 +499,7 @@
                     gradient: "linear-gradient(135deg, #27ae60, #117aca)"
                 },
                 {
-                    name: "Chase Freedom Flex (CFF)",
+                    name: "Freedom Flex (CFF)",
                     fee: "年费 $0",
                     isFree: true,
                     bonus: "开卡3个月内消费 $500 返现 $200",
@@ -510,7 +509,7 @@
             ],
             wellsfargo: [
                 {
-                    name: "Wells Fargo Autograph",
+                    name: "Autograph",
                     fee: "年费 $0",
                     isFree: true,
                     bonus: "开卡3个月内消费 $1,000 送 20,000 积分（价值 $200）",
@@ -518,7 +517,7 @@
                     gradient: "linear-gradient(135deg, #c0392b, #8e44ad)"
                 },
                 {
-                    name: "Wells Fargo Active Cash",
+                    name: "Active Cash",
                     fee: "年费 $0",
                     isFree: true,
                     bonus: "开卡3个月内消费 $500 返现 $200",
@@ -528,7 +527,7 @@
             ],
             citi: [
                 {
-                    name: "Citi Custom Cash",
+                    name: "Custom Cash",
                     fee: "年费 $0",
                     isFree: true,
                     bonus: "开卡3个月内消费 $1,500 返现 $200",
@@ -536,7 +535,7 @@
                     gradient: "linear-gradient(135deg, #003b70, #0088cc)"
                 },
                 {
-                    name: "Citi Double Cash",
+                    name: "Double Cash",
                     fee: "年费 $0",
                     isFree: true,
                     bonus: "开卡3个月内消费 $1,500 返现 $200",
@@ -544,7 +543,7 @@
                     gradient: "linear-gradient(135deg, #2980b9, #3498db)"
                 },
                 {
-                    name: "Citi Strata Premier",
+                    name: "Strata Premier",
                     fee: "$95 / 年",
                     isFree: false,
                     bonus: "开卡3个月内消费 $4,000 送 70,000 ~ 75,000 TYP 积分",
@@ -554,7 +553,7 @@
             ],
             hsbcus: [
                 {
-                    name: "HSBC Premier World Elite Mastercard",
+                    name: "Premier World Elite Mastercard",
                     fee: "$395 / 年",
                     isFree: false,
                     bonus: "开卡3个月内消费 $4,000 送 50,000 奖励积分",
@@ -564,7 +563,7 @@
             ],
             boa: [
                 {
-                    name: "BofA Customized Cash Rewards",
+                    name: "Customized Cash Rewards",
                     fee: "年费 $0",
                     isFree: true,
                     bonus: "开卡90天内消费 $1,000 返现 $200",
@@ -572,7 +571,7 @@
                     gradient: "linear-gradient(135deg, #e31837, #990011)"
                 },
                 {
-                    name: "BofA Travel Rewards",
+                    name: "Travel Rewards",
                     fee: "年费 $0",
                     isFree: true,
                     bonus: "开卡90天内消费 $1,000 送 25,000 积分（可报销 $250）",
