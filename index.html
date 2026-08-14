@@ -82,13 +82,13 @@
             text-shadow: 0 1px 4px rgba(0, 0, 0, 0.5);
         }
 
-        /* 2. 导航 Tab */
+        /* 2. 导航 Tab (调整为容纳4个选项) */
         .tabs {
             background: #ffffff;
             border-radius: 16px;
             padding: 5px;
             display: flex;
-            gap: 6px;
+            gap: 4px; /* 缩小间距以容纳四个按钮 */
             box-shadow: 0 2px 10px rgba(0, 0, 0, 0.03);
         }
 
@@ -96,7 +96,7 @@
             flex: 1;
             border: none;
             background: transparent;
-            padding: 11px 4px;
+            padding: 11px 0; /* 移除左右内边距，让文字自适应铺满 */
             border-radius: 12px;
             font-size: 13px;
             font-weight: 700;
@@ -146,7 +146,7 @@
             display: flex;
         }
 
-        /* 3. 列表通用样式 (银行 & 准备类目) */
+        /* 3. 列表通用样式 */
         .list-container {
             display: flex;
             flex-direction: column;
@@ -182,7 +182,7 @@
             align-items: center;
             justify-content: center;
             font-weight: 800;
-            font-size: 18px; /* Emoji 稍微调大 */
+            font-size: 18px; 
             color: #ffffff;
             flex-shrink: 0;
             box-shadow: 0 3px 8px rgba(0,0,0,0.08);
@@ -201,13 +201,13 @@
             margin-top: 2px;
         }
 
-        /* 准备类目专属渐变色 */
+        /* 专属渐变色 */
+        .bg-intro { background: linear-gradient(135deg, #f43f5e, #be123c); }
         .bg-address { background: linear-gradient(135deg, #10b981, #047857); }
         .bg-itin { background: linear-gradient(135deg, #8b5cf6, #6d28d9); }
         .bg-phone { background: linear-gradient(135deg, #f59e0b, #d97706); }
         .bg-network { background: linear-gradient(135deg, #3b82f6, #1d4ed8); }
 
-        /* 银行专属渐变色 (复用) */
         .bg-capone { background: linear-gradient(135deg, #003a70, #005696); font-size: 15px;}
         .bg-amex { background: linear-gradient(135deg, #0077d6, #00a0e9); font-size: 15px;}
         .bg-chase { background: linear-gradient(135deg, #117aca, #0a4d80); font-size: 15px;}
@@ -216,8 +216,7 @@
         .bg-hsbc { background: linear-gradient(135deg, #db0011, #9e000c); font-size: 15px;}
         .bg-boa { background: linear-gradient(135deg, #e31837, #00529b); font-size: 15px;}
 
-
-        /* 4. 详情展区通用 (信用卡 & 文章) */
+        /* 4. 详情展区通用 */
         .details-container {
             display: none;
             flex-direction: column;
@@ -245,34 +244,17 @@
         }
 
         /* 信用卡专属样式 */
-        .card-header {
-            display: flex;
-            align-items: center;
-            padding: 0 12px;
-            gap: 12px;
-        }
-
+        .card-header { display: flex; align-items: center; padding: 0 12px; gap: 12px; }
         .card-face {
-            width: 82px;
-            height: 52px;
-            border-radius: 8px;
-            flex-shrink: 0;
-            box-shadow: 0 3px 8px rgba(0,0,0,0.18);
-            position: relative;
-            background-size: cover;
-            background-position: center;
+            width: 82px; height: 52px; border-radius: 8px; flex-shrink: 0;
+            box-shadow: 0 3px 8px rgba(0,0,0,0.18); position: relative;
+            background-size: cover; background-position: center; border: 1px solid rgba(255,255,255,0.2);
         }
-
         .card-face::before {
-            content: '';
-            position: absolute;
-            top: 14px; left: 10px;
-            width: 12px; height: 9px;
-            background: #e2b042;
-            border-radius: 2px;
-            box-shadow: 0 0 2px rgba(0,0,0,0.2);
+            content: ''; position: absolute; top: 14px; left: 10px;
+            width: 12px; height: 9px; background: #e2b042;
+            border-radius: 2px; box-shadow: 0 0 2px rgba(0,0,0,0.2);
         }
-
         .card-main-info { flex: 1; }
         .card-title { font-size: 15px; font-weight: 700; color: #1a202c; line-height: 1.3; }
         .fee-badge {
@@ -308,10 +290,15 @@
             display: flex; justify-content: space-between; align-items: center;
             padding: 0 12px; font-size: 12px; color: #94a3b8;
         }
-        .read-btn {
-            color: #007aff; font-weight: 600; cursor: pointer;
-        }
+        .read-btn { color: #007aff; font-weight: 600; cursor: pointer; }
 
+        /* 社交媒体按钮 */
+        .social-btn {
+            text-decoration: none; font-size: 13px; font-weight: 700; 
+            padding: 8px 12px; border-radius: 8px; flex: 1; text-align: center;
+            transition: opacity 0.2s;
+        }
+        .social-btn:active { opacity: 0.8; }
     </style>
 </head>
 <body>
@@ -329,9 +316,34 @@
 
         <!-- 2. Tabs -->
         <div class="tabs">
+            <button class="tab-btn" onclick="switchTab('about')">关于莱恩</button>
             <button class="tab-btn active" onclick="switchTab('prep')">必要准备</button>
-            <button class="tab-btn">申卡指南</button>
+            <button class="tab-btn" onclick="switchTab('guide')">申卡指南</button>
             <button class="tab-btn" onclick="switchTab('cards')">卡片大全</button>
+        </div>
+
+        <!-- ================= CONTENT: 关于莱恩 ================= -->
+        <div id="view-about" class="tab-content">
+            <div class="content-box" style="padding: 20px 16px;">
+                <!-- 个人信息 -->
+                <div style="display: flex; align-items: center; gap: 16px; padding: 0 4px;">
+                    <div style="font-size: 56px; line-height: 1;">👨🏻‍💻</div>
+                    <div>
+                        <div style="font-size: 18px; font-weight: 800; color: #1a202c;">莱恩 (Ryan)</div>
+                        <div style="font-size: 13px; color: #64748b; margin-top: 4px; font-weight: 500;">资深云居民 / 美卡玩家 / 内容创作者</div>
+                    </div>
+                </div>
+                <!-- 简介描述 -->
+                <div class="article-summary" style="margin-top: 16px;">
+                    你好！我是莱恩。致力于分享最硬核、最实用的美国信用卡网申技巧、ITIN/EIN 申请指南及纯净网络环境搭建策略。<br><br>我的目标是：用最通俗的语言，打破信息差，帮助更多朋友体验到全球化优质金融体系带来的福利与便利。
+                </div>
+                <!-- 社交媒体跳转 -->
+                <div style="display: flex; gap: 12px; margin-top: 16px; padding: 0 4px;">
+                    <a href="#" class="social-btn" style="color: #007aff; background: #ebf5ff;">🐦 Twitter</a>
+                    <a href="#" class="social-btn" style="color: #e91e63; background: #fce4ec;">📕 小红书</a>
+                    <a href="#" class="social-btn" style="color: #059669; background: #d1fae5;">💬 微信社群</a>
+                </div>
+            </div>
         </div>
 
         <!-- ================= CONTENT: 必要准备 ================= -->
@@ -343,6 +355,15 @@
 
             <!-- 一级类目列表 -->
             <div class="list-container" id="listPrep">
+                <!-- 新增：写在前面 -->
+                <div class="list-card prep-card" onclick="selectItem('prep', this, 'intro')">
+                    <div class="item-icon bg-intro">💡</div>
+                    <div class="item-info">
+                        <div class="title-main">Read First</div>
+                        <div class="title-sub">写在前面：你适合吗？</div>
+                    </div>
+                </div>
+
                 <div class="list-card prep-card" onclick="selectItem('prep', this, 'address')">
                     <div class="item-icon bg-address">🏠</div>
                     <div class="item-info">
@@ -380,6 +401,15 @@
             <div class="details-container" id="detailsPrep"></div>
         </div>
 
+        <!-- ================= CONTENT: 申卡指南 (占位) ================= -->
+        <div id="view-guide" class="tab-content">
+            <div class="content-box" style="text-align: center; padding: 40px 16px; border: none; background: transparent; box-shadow: none;">
+                <div style="font-size: 36px; margin-bottom: 12px;">🚧</div>
+                <div style="font-size: 16px; font-weight: 700; color: #1a202c;">申卡指南内容正在整理中...</div>
+                <div style="font-size: 13px; margin-top: 8px; color: #64748b;">从新手第一张卡到高阶酒店航空玩法<br>敬请期待更详细的实战攻略</div>
+            </div>
+        </div>
+
         <!-- ================= CONTENT: 卡片大全 ================= -->
         <div id="view-cards" class="tab-content">
             <!-- 返回按钮 -->
@@ -387,30 +417,35 @@
                 <span>← 返回所有银行</span>
             </div>
 
-            <!-- 一级类目列表 -->
+            <!-- 一级类目列表 (已恢复全部7家银行) -->
             <div class="list-container" id="listCards">
                 <div class="list-card bank-card" onclick="selectItem('cards', this, 'capone')">
                     <div class="item-icon bg-capone">C1</div>
-                    <div class="item-info">
-                        <div class="title-main">Capital One</div>
-                        <div class="title-sub">第一资本银行</div>
-                    </div>
+                    <div class="item-info"><div class="title-main">Capital One</div><div class="title-sub">第一资本银行</div></div>
                 </div>
-                
                 <div class="list-card bank-card" onclick="selectItem('cards', this, 'amex')">
                     <div class="item-icon bg-amex">AX</div>
-                    <div class="item-info">
-                        <div class="title-main">American Express</div>
-                        <div class="title-sub">美国运通</div>
-                    </div>
+                    <div class="item-info"><div class="title-main">American Express</div><div class="title-sub">美国运通</div></div>
                 </div>
-                
                 <div class="list-card bank-card" onclick="selectItem('cards', this, 'chase')">
                     <div class="item-icon bg-chase">CH</div>
-                    <div class="item-info">
-                        <div class="title-main">Chase</div>
-                        <div class="title-sub">大通银行</div>
-                    </div>
+                    <div class="item-info"><div class="title-main">Chase</div><div class="title-sub">大通银行</div></div>
+                </div>
+                <div class="list-card bank-card" onclick="selectItem('cards', this, 'wellsfargo')">
+                    <div class="item-icon bg-wf">WF</div>
+                    <div class="item-info"><div class="title-main">Wells Fargo</div><div class="title-sub">富国银行</div></div>
+                </div>
+                <div class="list-card bank-card" onclick="selectItem('cards', this, 'citi')">
+                    <div class="item-icon bg-citi">CI</div>
+                    <div class="item-info"><div class="title-main">Citi</div><div class="title-sub">花旗银行</div></div>
+                </div>
+                <div class="list-card bank-card" onclick="selectItem('cards', this, 'hsbcus')">
+                    <div class="item-icon bg-hsbc">HS</div>
+                    <div class="item-info"><div class="title-main">HSBC US</div><div class="title-sub">汇丰美国</div></div>
+                </div>
+                <div class="list-card bank-card" onclick="selectItem('cards', this, 'boa')">
+                    <div class="item-icon bg-boa">BA</div>
+                    <div class="item-info"><div class="title-main">Bank of America</div><div class="title-sub">美国银行</div></div>
                 </div>
             </div>
 
@@ -421,109 +456,89 @@
     </div>
 
     <script>
-        // === 数据源：卡片大全 ===
+        // === 数据源：卡片大全 (已恢复全部卡片) ===
         const cardData = {
             capone: [
-                {
-                    name: "Venture X", fee: "$395 / 年", isFree: false,
-                    bonus: "开卡3个月内消费 $4,000 送 75,000 Venture 积分",
-                    rewards: "所有消费 2x 积分；每年 $300 预订报销",
-                    gradient: "linear-gradient(135deg, #0d233a, #204060)"
-                }
+                { name: "Venture X", fee: "$395 / 年", isFree: false, bonus: "开卡3个月内消费 $4,000 送 75,000 Venture 积分", rewards: "所有消费 2x 积分；Capital One Travel 订酒店/租车 10x，机票 5x；每年 $300 预订报销 + 10,000 周年奖励积分（免费赠送休息室）", gradient: "linear-gradient(135deg, #0d233a, #204060)" },
+                { name: "Venture One", fee: "年费 $0", isFree: true, bonus: "开卡3个月内消费 $500 送 20,000 积分", rewards: "所有消费 1.5x 积分；无境外消费手续费（FTF），入门级旅行好卡", gradient: "linear-gradient(135deg, #4a6572, #34495e)" },
+                { name: "SavorOne", fee: "年费 $0", isFree: true, bonus: "开卡3个月内消费 $500 返现 $200", rewards: "餐饮、超市、娱乐及指定流媒体消费 3% 返现；无境外消费手续费", gradient: "linear-gradient(135deg, #e67e22, #d35400)" },
+                { name: "Quicksilver", fee: "年费 $0", isFree: true, bonus: "开卡3个月内消费 $500 返现 $200", rewards: "无脑所有消费 1.5% 返现，适合新手积累信用", gradient: "linear-gradient(135deg, #bdc3c7, #7f8c8d)" }
             ],
             amex: [
-                {
-                    name: "Hilton Honors", fee: "年费 $0 (小白卡)", isFree: true,
-                    bonus: "开卡6个月内消费 $2,000 送 100,000 希尔顿积分",
-                    rewards: "希尔顿旗下消费 7x 积分；无 FTF，入门保号神器",
-                    gradient: "linear-gradient(135deg, #003366, #006699)"
-                }
+                { name: "Hilton Honors", fee: "年费 $0 (小白卡)", isFree: true, bonus: "开卡6个月内消费 $2,000 送 100,000 希尔顿积分", rewards: "希尔顿旗下消费 7x 积分；餐饮、超市、加油 5x 积分；送 Hilton 银卡会籍，无 FTF", gradient: "linear-gradient(135deg, #003366, #006699)" },
+                { name: "Gold Card", fee: "$325 / 年", isFree: false, bonus: "开卡6个月内消费 $6,000 送 60,000 ~ 90,000 MR 积分", rewards: "全球餐厅及美国超市 4x MR 积分；机票 3x；每年 $120 Dining Credit + $120 Uber Cash", gradient: "linear-gradient(135deg, #d4af37, #aa7c11)" },
+                { name: "Platinum Card", fee: "$695 / 年", isFree: false, bonus: "开卡6个月内消费 $8,000 送 80,000 ~ 175,000 MR 积分", rewards: "机票及预订酒店 5x 积分；百夫长休息室 + Priority Pass 权益；每年 $200 酒店报销 + $200 航空报销", gradient: "linear-gradient(135deg, #e0e0e0, #8a8a8a)" },
+                { name: "Blue Cash Everyday (BCE)", fee: "年费 $0", isFree: true, bonus: "开卡6个月内消费 $2,000 返现 $200", rewards: "美国网购、超市、加油均享 3% 返现；每月 $7 Disney Bundle 报销", gradient: "linear-gradient(135deg, #2980b9, #2c3e50)" }
             ],
             chase: [
-                {
-                    name: "Sapphire Preferred", fee: "$95 / 年", isFree: false,
-                    bonus: "开卡3个月内消费 $4,000 送 60,000 UR 积分",
-                    rewards: "餐饮及流媒体 3x，旅行消费 2x；积分 1:1 转航司",
-                    gradient: "linear-gradient(135deg, #1e3c72, #2a5298)"
-                }
+                { name: "Sapphire Preferred (CSP)", fee: "$95 / 年", isFree: false, bonus: "开卡3个月内消费 $4,000 送 60,000 ~ 75,000 UR 积分", rewards: "餐饮及指定流媒体 3x，旅行消费 2x；每年 $50 酒店报销；积分可 1:1 转等知名航司/酒店", gradient: "linear-gradient(135deg, #1e3c72, #2a5298)" },
+                { name: "Sapphire Reserve (CSR)", fee: "$550 / 年", isFree: false, bonus: "开卡3个月内消费 $4,000 送 60,000 UR 积分", rewards: "每年 $300 旅行无脑报销；旅行及餐饮 3x 积分；免费机场 Priority Pass 休息室", gradient: "linear-gradient(135deg, #2c3e50, #000000)" },
+                { name: "Freedom Unlimited (CFU)", fee: "年费 $0", isFree: true, bonus: "开卡3个月内消费 $500 返现 $150", rewards: "餐饮及药房 3% 返现；无脑所有消费 1.5% 返现；Chase Portal 旅行 5%", gradient: "linear-gradient(135deg, #27ae60, #117aca)" },
+                { name: "Freedom Flex (CFF)", fee: "年费 $0", isFree: true, bonus: "开卡3个月内消费 $500 返现 $200", rewards: "每季度特定类别 5% 轮换返现（上限 $1,500）；餐饮及药房 3%", gradient: "linear-gradient(135deg, #16a085, #2980b9)" }
+            ],
+            wellsfargo: [
+                { name: "Autograph", fee: "年费 $0", isFree: true, bonus: "开卡3个月内消费 $1,000 送 20,000 积分（价值 $200）", rewards: "餐饮、旅行、加油、交通、流媒体及手机账单 均享 3x 无上限积分；免费手机保险", gradient: "linear-gradient(135deg, #c0392b, #8e44ad)" },
+                { name: "Active Cash", fee: "年费 $0", isFree: true, bonus: "开卡3个月内消费 $500 返现 $200", rewards: "所有消费无脑 2% 现金返现，无类别限制；送最高 $600 手机保险", gradient: "linear-gradient(135deg, #d35400, #c0392b)" }
+            ],
+            citi: [
+                { name: "Custom Cash", fee: "年费 $0", isFree: true, bonus: "开卡3个月内消费 $1,500 返现 $200", rewards: "每月最高消费类别自动享 5% 返现（餐饮/加油/超市/旅行等，前 $500 消费）", gradient: "linear-gradient(135deg, #003b70, #0088cc)" },
+                { name: "Double Cash", fee: "年费 $0", isFree: true, bonus: "开卡3个月内消费 $1,500 返现 $200", rewards: "所有消费 2% 返现（刷卡 1% + 关账还款 1%）", gradient: "linear-gradient(135deg, #2980b9, #3498db)" },
+                { name: "Strata Premier", fee: "$95 / 年", isFree: false, bonus: "开卡3个月内消费 $4,000 送 70,000 ~ 75,000 TYP 积分", rewards: "餐厅、超市、加油站、酒店及机票消费 3x 积分；每年 $100 酒店折抵", gradient: "linear-gradient(135deg, #1f4068, #162447)" }
+            ],
+            hsbcus: [
+                { name: "Premier World Elite Mastercard", fee: "$395 / 年", isFree: false, bonus: "开卡3个月内消费 $4,000 送 50,000 奖励积分", rewards: "旅行消费 3x 积分，其他消费 1.5x；每年 $100 TSA/Global Entry 报销；免费 Boingo Wi-Fi", gradient: "linear-gradient(135deg, #db0011, #4a0005)" }
+            ],
+            boa: [
+                { name: "Customized Cash Rewards", fee: "年费 $0", isFree: true, bonus: "开卡90天内消费 $1,000 返现 $200", rewards: "自选类别 3% 返现（网购/餐饮/旅行/加油等）；高级客户加成最高可达 5.25%", gradient: "linear-gradient(135deg, #e31837, #990011)" },
+                { name: "Travel Rewards", fee: "年费 $0", isFree: true, bonus: "开卡90天内消费 $1,000 送 25,000 积分（可报销 $250）", rewards: "所有消费无脑 1.5 积分；无 FTF；高级会员最高加成可达 2.62 积分/美元", gradient: "linear-gradient(135deg, #00529b, #002f6c)" }
             ]
         };
 
-        // === 数据源：必要准备 (测试文章) ===
+        // === 数据源：必要准备 ===
         const prepData = {
-            address: [
+            intro: [
                 {
-                    tag: "干货指南",
-                    title: "如何获取商业私人地址 (PMB) 用于海外申卡",
-                    summary: "身在海外如何拥有一张真实街道地址？解析 Anytime Mailbox 与 Planet Express 的区别，以及在跨国网银申请中提供合规 Address Proof 的实操技巧。",
-                    date: "2026-08-10"
-                },
-                {
-                    tag: "避坑必读",
-                    title: "地址证明 (PoA) 的常见问题及解决思路",
-                    summary: "银行要求验证居住地址时，如何通过租房合同、水电账单或海外券商对账单安全通过银行的风控审查。",
-                    date: "2026-07-22"
+                    tag: "新手必读",
+                    title: "什么样的人适合成为“云居民”？",
+                    summary: "“云居民”是指肉身不在美国，但通过合法合规的手段建立美国信用体系、申请美国信用卡的人群。如果你热衷于全球旅行、常旅客计划，或者希望规避高昂的跨国消费手续费，那么你非常适合这条路。本文带你全面评估申请门槛与收益。",
+                    date: "2026-08-13"
                 }
+            ],
+            address: [
+                { tag: "干货指南", title: "如何获取商业私人地址 (PMB) 用于海外申卡", summary: "身在海外如何拥有一张真实街道地址？解析 Anytime Mailbox 与 Planet Express 的区别，以及在跨国网银申请中提供合规 Address Proof 的实操技巧。", date: "2026-08-10" },
+                { tag: "避坑必读", title: "地址证明 (PoA) 的常见问题及解决思路", summary: "银行要求验证居住地址时，如何通过租房合同、水电账单或海外券商对账单安全通过银行的风控审查。", date: "2026-07-22" }
             ],
             itin: [
-                {
-                    tag: "保姆级教程",
-                    title: "零门槛申请 ITIN 与 EIN 的完全指南",
-                    summary: "非美居民如何合规申请个人纳税识别码 (ITIN)？详细拆解 W-7 表格填写规范，以及代办机构与自助邮寄护照公证件的优劣势分析。",
-                    date: "2026-08-01"
-                },
-                {
-                    tag: "实战案例",
-                    title: "ITIN 下发后如何应对 TransUnion 验证报错",
-                    summary: "很多云居民在拿到 ITIN 首次申卡时，常遇到三大信用局（尤其是 TransUnion）无法拉取信用报告的问题。本文教你如何发传真并与客服对线解锁记录。",
-                    date: "2026-08-12"
-                }
+                { tag: "保姆级教程", title: "零门槛申请 ITIN 与 EIN 的完全指南", summary: "非美居民如何合规申请个人纳税识别码 (ITIN)？详细拆解 W-7 表格填写规范，以及代办机构与自助邮寄护照公证件的优劣势分析。", date: "2026-08-01" },
+                { tag: "实战案例", title: "ITIN 下发后如何应对 TransUnion 验证报错", summary: "很多云居民在拿到 ITIN 首次申卡时，常遇到三大信用局（尤其是 TransUnion）无法拉取信用报告的问题。本文教你如何发传真并与客服对线解锁记录。", date: "2026-08-12" }
             ],
             phone: [
-                {
-                    tag: "工具推荐",
-                    title: "保号神器 Google Voice 与 Ultra Mobile 对比",
-                    summary: "接收美国银行的 2FA 验证码，到底是选择免费的 VoIP 电话还是 3刀/月的实体卡 PayGo？一篇看懂各自的拦截机制。",
-                    date: "2026-06-15"
-                },
-                {
-                    tag: "话术分享",
-                    title: "Chase 银行 Reconsideration 电话话术解析",
-                    summary: "网申大通银行遭遇 Pending 或者拒信不要慌。教你如何拨打后门电话，通过人工审核策略性应对客服质询，逆转申卡结果。",
-                    date: "2026-08-05"
-                }
+                { tag: "工具推荐", title: "保号神器 Google Voice 与 Ultra Mobile 对比", summary: "接收美国银行的 2FA 验证码，到底是选择免费的 VoIP 电话还是 3刀/月的实体卡 PayGo？一篇看懂各自的拦截机制。", date: "2026-06-15" },
+                { tag: "话术分享", title: "Chase 银行 Reconsideration 电话话术解析", summary: "网申大通银行遭遇 Pending 或者拒信不要慌。教你如何拨打后门电话，通过人工审核策略性应对客服质询，逆转申卡结果。", date: "2026-08-05" }
             ],
             network: [
-                {
-                    tag: "风控科普",
-                    title: "为什么申请美国信用卡需要纯净的原生 IP",
-                    summary: "带你了解什么是高欺诈风险分 (Fraud Score)。IP 的纯净度直接决定了你申请运通小白卡等入门卡种时，是否会触发二次身份验证。",
-                    date: "2026-05-20"
-                }
+                { tag: "风控科普", title: "为什么申请美国信用卡需要纯净的原生 IP", summary: "带你了解什么是高欺诈风险分 (Fraud Score)。IP 的纯净度直接决定了你申请运通小白卡等入门卡种时，是否会触发二次身份验证。", date: "2026-05-20" }
             ]
         };
 
         // === 状态管理 ===
         let state = {
+            about: { isSelected: false },
             prep: { isSelected: false },
+            guide: { isSelected: false },
             cards: { isSelected: false }
         };
 
         // === Tab 切换逻辑 ===
         function switchTab(tabId) {
-            // 重置 Tab 按钮样式
             const btns = document.querySelectorAll('.tab-btn');
             btns.forEach(btn => btn.classList.remove('active'));
             event.target.classList.add('active');
 
-            // 隐藏所有视图
             document.querySelectorAll('.tab-content').forEach(view => view.classList.remove('active'));
-            
-            // 显示选中视图
             document.getElementById(`view-${tabId}`).classList.add('active');
             
-            // 切换 Tab 时重置内部状态到一级菜单
-            if (state[tabId].isSelected) {
+            if (state[tabId] && state[tabId].isSelected) {
                 goBack(tabId);
             }
         }
@@ -533,10 +548,8 @@
             if (state[tabId].isSelected) return;
             state[tabId].isSelected = true;
 
-            // 显示返回按钮
             document.getElementById(`backBar${capitalize(tabId)}`).classList.add('visible');
 
-            // 隐藏其他选项，高亮当前
             const allItems = document.querySelectorAll(`#list${capitalize(tabId)} .list-card`);
             allItems.forEach(item => {
                 if (item === element) {
@@ -546,7 +559,6 @@
                 }
             });
 
-            // 渲染详情
             const container = document.getElementById(`details${capitalize(tabId)}`);
             
             if (tabId === 'cards') {
@@ -563,14 +575,11 @@
             if (!state[tabId].isSelected) return;
             state[tabId].isSelected = false;
 
-            // 隐藏返回按钮
             document.getElementById(`backBar${capitalize(tabId)}`).classList.remove('visible');
 
-            // 隐藏详情容器
             const container = document.getElementById(`details${capitalize(tabId)}`);
             container.classList.remove('visible');
 
-            // 延迟恢复列表显示
             setTimeout(() => {
                 const allItems = document.querySelectorAll(`#list${capitalize(tabId)} .list-card`);
                 allItems.forEach(item => {
@@ -620,7 +629,6 @@
             `).join('');
         }
 
-        // 辅助函数
         function capitalize(str) {
             return str.charAt(0).toUpperCase() + str.slice(1);
         }
