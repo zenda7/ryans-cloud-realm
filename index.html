@@ -1,114 +1,970 @@
-// === 新增：全局文本翻译辅助函数 ===
-// 用于确保动态生成的 HTML 和搜索文本能和当前语言状态保持一致
-function translateText(text) {
-    if (!text) return text;
-    let result = text;
-    if (state.isTraditional) {
-        for (let key in simToTraMap) {
-            result = result.replace(new RegExp(key, 'g'), simToTraMap[key]);
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>莱恩的云上国度 - 美国信用卡情报库</title>
+    <style>
+        :root {
+            --bg-color: #f2f5f9;
+            --text-color: #2d3748;
+            --card-bg: #ffffff;
+            --card-border: #eef2f6;
+            --sub-text: #64748b;
+            --secondary-bg: #f8fafc;
+            --accent-color: #007aff;
+            --action-bg: rgba(255, 255, 255, 0.75);
+            --action-border: rgba(226, 232, 240, 0.8);
+            --shadow: 0 4px 16px rgba(0, 0, 0, 0.04);
         }
-    } else {
-        for (let key in simToTraMap) {
-            result = result.replace(new RegExp(simToTraMap[key], 'g'), key);
+
+        body.dark-mode {
+            --bg-color: #0f172a;
+            --text-color: #f1f5f9;
+            --card-bg: #1e293b;
+            --card-border: #334155;
+            --sub-text: #94a3b8;
+            --secondary-bg: #0f172a;
+            --accent-color: #38bdf8;
+            --action-bg: rgba(30, 41, 59, 0.75);
+            --action-border: rgba(51, 65, 85, 0.8);
+            --shadow: 0 4px 16px rgba(0, 0, 0, 0.3);
         }
-    }
-    return result;
-}
 
-// === 修改：多语言切换函数 (复用辅助函数) ===
-function toggleLanguage() {
-    state.isTraditional = !state.isTraditional;
-    document.getElementById('langTxt').innerText = state.isTraditional ? '简体' : '繁体';
-    
-    const walk = document.createTreeWalker(document.body, NodeFilter.SHOW_TEXT, null, false);
-    let node;
-    while (node = walk.nextNode()) {
-        if (node.parentElement.tagName === 'SCRIPT' || node.parentElement.tagName === 'STYLE') continue;
-        node.nodeValue = translateText(node.nodeValue);
-    }
-}
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", sans-serif;
+            transition: background-color 0.25s ease, color 0.25s ease, border-color 0.25s ease;
+        }
 
-// === 修改：全局深度搜索逻辑 ===
-function handleSearch() {
-    const query = document.getElementById('searchInput').value.toLowerCase().trim();
-    const allCards = document.querySelectorAll('.list-card');
-    
-    allCards.forEach(card => {
-        // 1. 获取卡片表面的文字
-        let textToSearch = card.innerText;
-        
-        // 2. 解析 onclick 事件，深入数据源抓取详情内容
-        const onclickStr = card.getAttribute('onclick');
-        if (onclickStr) {
-            // 匹配 selectItem('tabId', this, 'itemKey') 中的 tabId 和 itemKey
-            const match = onclickStr.match(/selectItem\s*\(\s*['"]([^'"]+)['"]\s*,\s*(?:this|me)\s*,\s*['"]([^'"]+)['"]\s*\)/);
-            if (match) {
-                const tabId = match[1];
-                const itemKey = match[2];
-                let deepData = null;
-                
-                if (tabId === 'cards' && cardData[itemKey]) deepData = cardData[itemKey];
-                else if (tabId === 'prep' && prepData[itemKey]) deepData = prepData[itemKey];
-                else if (tabId === 'guide' && guideData[itemKey]) deepData = guideData[itemKey];
-                
-                // 将深层数据转化为字符串拼接进去
-                if (deepData) textToSearch += " " + JSON.stringify(deepData);
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            display: flex;
+            justify-content: center;
+            padding: 16px;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 440px;
+            display: flex;
+            flex-direction: column;
+            gap: 14px;
+        }
+
+        /* 顶部功能操作按键行 */
+        .top-actions-bar {
+            display: flex;
+            justify-content: flex-end;
+            align-items: center;
+            gap: 8px;
+            width: 100%;
+            margin-bottom: 2px;
+        }
+
+        .action-btn {
+            background: var(--action-bg);
+            backdrop-filter: blur(8px);
+            border: 1px solid var(--action-border);
+            color: var(--text-color);
+            font-size: 12px;
+            font-weight: 700;
+            padding: 6px 12px;
+            border-radius: 20px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.03);
+            user-select: none;
+        }
+
+        .action-btn:active {
+            transform: scale(0.95);
+        }
+
+        /* 全局搜索框 */
+        .search-wrapper {
+            display: none;
+            width: 100%;
+            margin-bottom: 4px;
+        }
+
+        .search-wrapper.active {
+            display: block;
+            animation: fadeIn 0.25s ease;
+        }
+
+        .search-input {
+            width: 100%;
+            padding: 10px 14px;
+            border-radius: 12px;
+            border: 1.5px solid var(--card-border);
+            background: var(--card-bg);
+            color: var(--text-color);
+            font-size: 13px;
+            outline: none;
+            box-shadow: var(--shadow);
+        }
+
+        .search-input:focus {
+            border-color: var(--accent-color);
+        }
+
+        /* Header */
+        .banner {
+            position: relative;
+            border-radius: 20px;
+            height: 150px;
+            overflow: hidden;
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.12);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .banner-bg {
+            position: absolute;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background-image: url('https://images.unsplash.com/photo-1559526324-4b87b5e36e44?q=80&w=800&auto=format&fit=crop');
+            background-size: cover;
+            background-position: center;
+            filter: brightness(0.65) contrast(1.1);
+        }
+
+        .banner-overlay {
+            position: absolute;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: linear-gradient(180deg, rgba(0,0,0,0.1) 0%, rgba(0,0,0,0.65) 100%);
+        }
+
+        .banner-content {
+            position: relative;
+            z-index: 2;
+            text-align: center;
+            padding: 0 16px;
+        }
+
+        .banner-title {
+            font-size: 24px;
+            font-weight: 900;
+            color: #ffffff;
+            letter-spacing: 0.5px;
+            text-shadow: 0 2px 8px rgba(0, 0, 0, 0.6);
+            margin-bottom: 6px;
+        }
+
+        .banner-subtitle {
+            font-size: 13px;
+            color: rgba(255, 255, 255, 0.9);
+            font-weight: 500;
+            letter-spacing: 0.5px;
+            text-shadow: 0 1px 4px rgba(0, 0, 0, 0.5);
+        }
+
+        /* 导航 Tab */
+        .tabs {
+            background: var(--card-bg);
+            border-radius: 16px;
+            padding: 5px;
+            display: flex;
+            gap: 4px;
+            box-shadow: var(--shadow);
+            border: 1px solid var(--card-border);
+        }
+
+        .tab-btn {
+            flex: 1;
+            border: none;
+            background: transparent;
+            padding: 11px 0;
+            border-radius: 12px;
+            font-size: 13px;
+            font-weight: 700;
+            color: var(--sub-text);
+            cursor: pointer;
+            transition: all 0.25s ease;
+            text-align: center;
+        }
+
+        .tab-btn.active {
+            background: var(--accent-color);
+            color: #ffffff;
+            box-shadow: 0 4px 12px rgba(0, 122, 255, 0.28);
+        }
+
+        /* 视图切换 */
+        .tab-content {
+            display: none;
+            flex-direction: column;
+            gap: 14px;
+        }
+
+        .tab-content.active {
+            display: flex;
+            animation: fadeIn 0.3s ease;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(5px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* 返回按钮 */
+        .back-bar {
+            display: none;
+            align-items: center;
+            gap: 6px;
+            color: var(--accent-color);
+            font-weight: 700;
+            font-size: 14px;
+            cursor: pointer;
+            padding: 2px 4px;
+            width: fit-content;
+        }
+
+        .back-bar.visible {
+            display: flex;
+        }
+
+        /* 通用列表 */
+        .list-container {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .list-card {
+            background: var(--card-bg);
+            border: 1.5px solid var(--card-border);
+            border-radius: 16px;
+            padding: 14px 20px;
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            cursor: pointer;
+            transition: all 0.25s cubic-bezier(0.25, 1, 0.5, 1);
+            box-shadow: var(--shadow);
+        }
+
+        .list-card:active { transform: scale(0.98); }
+        .list-card.hidden { display: none !important; }
+        .list-card.selected-active {
+            border-color: var(--accent-color);
+            box-shadow: 0 4px 14px rgba(0, 122, 255, 0.15);
+            cursor: default;
+        }
+
+        .item-icon {
+            width: 44px;
+            height: 44px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 800;
+            font-size: 18px; 
+            color: #ffffff;
+            flex-shrink: 0;
+            box-shadow: 0 3px 8px rgba(0,0,0,0.08);
+        }
+
+        .item-info .title-main {
+            font-size: 15px;
+            font-weight: 700;
+            color: var(--text-color);
+            line-height: 1.2;
+        }
+
+        .item-info .title-sub {
+            font-size: 12px;
+            color: var(--sub-text);
+            margin-top: 3px;
+        }
+
+        /* 图标渐变色 */
+        .bg-intro { background: linear-gradient(135deg, #f43f5e, #be123c); }
+        .bg-address { background: linear-gradient(135deg, #10b981, #047857); }
+        .bg-itin { background: linear-gradient(135deg, #8b5cf6, #6d28d9); }
+        .bg-phone { background: linear-gradient(135deg, #f59e0b, #d97706); }
+        .bg-network { background: linear-gradient(135deg, #3b82f6, #1d4ed8); }
+
+        .bg-g-start { background: linear-gradient(135deg, #3b82f6, #1d4ed8); }
+        .bg-g-rule { background: linear-gradient(135deg, #ef4444, #b91c1c); }
+        .bg-g-points { background: linear-gradient(135deg, #10b981, #047857); }
+        .bg-g-recon { background: linear-gradient(135deg, #f59e0b, #b45309); }
+        .bg-g-gt { background: linear-gradient(135deg, #8b5cf6, #3b82f6); font-size: 16px; }
+
+        .bg-capone { background: linear-gradient(135deg, #003a70, #005696); font-size: 15px;}
+        .bg-amex { background: linear-gradient(135deg, #0077d6, #00a0e9); font-size: 15px;}
+        .bg-chase { background: linear-gradient(135deg, #117aca, #0a4d80); font-size: 15px;}
+        .bg-wf { background: linear-gradient(135deg, #d71e28, #a30e15); font-size: 15px;}
+        .bg-citi { background: linear-gradient(135deg, #003b70, #0066b2); font-size: 15px;}
+        .bg-hsbc { background: linear-gradient(135deg, #db0011, #9e000c); font-size: 15px;}
+        .bg-boa { background: linear-gradient(135deg, #e31837, #00529b); font-size: 15px;}
+
+        /* 详情展区 */
+        .details-container {
+            display: none;
+            flex-direction: column;
+            gap: 14px;
+            opacity: 0;
+            transform: translateY(10px);
+            transition: opacity 0.3s ease, transform 0.3s ease;
+        }
+
+        .details-container.visible {
+            display: flex;
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        .content-box {
+            background: var(--card-bg);
+            border-radius: 18px;
+            padding: 16px 14px;
+            box-shadow: var(--shadow);
+            border: 1px solid var(--card-border);
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        /* 卡片详情样式 */
+        .card-header { display: flex; align-items: center; padding: 0 6px; gap: 12px; }
+        .card-face {
+            width: 80px; height: 50px; border-radius: 8px; flex-shrink: 0;
+            box-shadow: 0 3px 8px rgba(0,0,0,0.18); position: relative;
+            background-size: cover; background-position: center; border: 1px solid rgba(255,255,255,0.2);
+        }
+        .card-face::before {
+            content: ''; position: absolute; top: 12px; left: 10px;
+            width: 12px; height: 9px; background: #e2b042;
+            border-radius: 2px; box-shadow: 0 0 2px rgba(0,0,0,0.2);
+        }
+        .card-main-info { flex: 1; }
+        .card-title { font-size: 15px; font-weight: 700; color: var(--text-color); line-height: 1.3; }
+        .fee-badge {
+            display: inline-block; margin-top: 4px; font-size: 11px; font-weight: 700;
+            padding: 2px 8px; border-radius: 6px; width: fit-content;
+        }
+        .fee-free { background: #e6fffa; color: #047857; }
+        .fee-paid { background: #fff7ed; color: #c2410c; }
+        body.dark-mode .fee-free { background: rgba(4, 120, 87, 0.25); color: #34d399; }
+        body.dark-mode .fee-paid { background: rgba(194, 65, 12, 0.25); color: #fb923c; }
+
+        .card-body {
+            display: flex; flex-direction: column; gap: 8px;
+            background: var(--secondary-bg); border-radius: 12px; padding: 12px;
+        }
+        .info-row { display: flex; font-size: 12px; line-height: 1.4; gap: 10px; }
+        .info-label { font-weight: 700; color: var(--sub-text); width: 75px; flex-shrink: 0; }
+        .info-value { color: var(--text-color); flex: 1; }
+        .highlight-text { color: var(--accent-color); font-weight: 600; }
+
+        /* 文章通用样式 */
+        .article-title {
+            font-size: 16px; font-weight: 800; color: var(--text-color);
+            padding: 0 4px; line-height: 1.4;
+        }
+        .article-summary {
+            font-size: 13px; color: var(--sub-text); background: var(--secondary-bg);
+            border-radius: 12px; padding: 12px 14px; line-height: 1.6;
+        }
+        .article-full-text {
+            display: none;
+            margin-top: 8px;
+            padding-top: 10px;
+            border-top: 1px stroke var(--card-border);
+            font-size: 13px;
+            color: var(--text-color);
+            line-height: 1.65;
+        }
+        .article-full-text.open {
+            display: block;
+            animation: fadeIn 0.3s ease;
+        }
+        .article-footer {
+            display: flex; justify-content: flex-end; align-items: center;
+            padding: 0 4px; font-size: 13px;
+        }
+        .read-btn { color: var(--accent-color); font-weight: 700; cursor: pointer; user-select: none; }
+
+        /* 社交媒体按钮 */
+        .social-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 10px;
+            margin-top: 14px;
+            padding: 0 2px;
+        }
+        .social-btn {
+            text-decoration: none; font-size: 12px; font-weight: 700; 
+            padding: 10px 12px; border-radius: 12px; text-align: center;
+            display: flex; align-items: center; justify-content: center; gap: 6px;
+            transition: transform 0.2s, opacity 0.2s;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.03);
+        }
+        .social-btn:active { transform: scale(0.97); opacity: 0.9; }
+
+        .btn-yt { color: #ff0000; background: #ffe6e6; }
+        .btn-bili { color: #00a1d6; background: #e6f7ff; }
+        .btn-red { color: #ff2442; background: #ffe8ec; }
+        .btn-email { color: #8b5cf6; background: #f3e8ff; }
+
+        body.dark-mode .btn-yt { background: rgba(255, 0, 0, 0.18); color: #ff6666; }
+        body.dark-mode .btn-bili { background: rgba(0, 161, 214, 0.18); color: #66ccff; }
+        body.dark-mode .btn-red { background: rgba(255, 36, 66, 0.18); color: #ff7f92; }
+        body.dark-mode .btn-email { background: rgba(139, 92, 246, 0.18); color: #c084fc; }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <!-- 0. 顶部独立功能操作按键 -->
+        <div class="top-actions-bar">
+            <div class="action-btn" onclick="toggleSearch()"><span id="searchIcon">🔍</span> <span id="searchTxt">搜索</span></div>
+            <div class="action-btn" onclick="toggleLanguage()"><span id="langIcon">🌐</span> <span id="langTxt">繁体</span></div>
+            <div class="action-btn" onclick="toggleDarkMode()"><span id="modeIcon">🌙</span> <span id="modeTxt">夜间</span></div>
+        </div>
+
+        <!-- 搜索输入框区 -->
+        <div class="search-wrapper" id="searchWrapper">
+            <input type="text" class="search-input" id="searchInput" placeholder="搜索卡片、银行或准备攻略..." oninput="handleSearch()">
+        </div>
+
+        <!-- 1. Banner Header -->
+        <div class="banner">
+            <div class="banner-bg"></div>
+            <div class="banner-overlay"></div>
+            <div class="banner-content">
+                <div class="banner-title" id="siteTitle">莱恩的云上国度</div>
+                <div class="banner-subtitle" id="siteSub">云居民的美国信用卡情报库</div>
+            </div>
+        </div>
+
+        <!-- 2. Tabs -->
+        <div class="tabs">
+            <button class="tab-btn" onclick="switchTab('about')">关于莱恩</button>
+            <button class="tab-btn active" onclick="switchTab('prep')">必要准备</button>
+            <button class="tab-btn" onclick="switchTab('guide')">申卡指南</button>
+            <button class="tab-btn" onclick="switchTab('cards')">卡片大全</button>
+        </div>
+
+        <!-- ================= CONTENT: 关于莱恩 ================= -->
+        <div id="view-about" class="tab-content">
+            <div class="content-box" style="padding: 20px 16px;">
+                <div style="display: flex; align-items: center; gap: 16px; padding: 0 4px;">
+                    <div style="font-size: 52px; line-height: 1;">👨🏻‍💻</div>
+                    <div>
+                        <div style="font-size: 18px; font-weight: 800; color: var(--text-color);">莱恩 (Ryan)</div>
+                        <div style="font-size: 13px; color: var(--sub-text); margin-top: 4px; font-weight: 500;">资深云居民 / 美卡玩家 / 内容创作者</div>
+                    </div>
+                </div>
+                <div class="article-summary" style="margin-top: 14px;">
+                    你好！我是莱恩。致力于分享最硬核、最实用的美国信用卡网申技巧、ITIN/EIN 申请指南及纯净网络环境搭建策略。<br><br>我的目标是：用最通俗的语言，打破信息差，帮助更多朋友体验到全球化优质金融体系带来的福利与便利。
+                </div>
+                <div class="social-grid">
+                    <a href="#" class="social-btn btn-yt"><span>📺</span> YouTube</a>
+                    <a href="#" class="social-btn btn-bili"><span>📺</span> Bilibili</a>
+                    <a href="#" class="social-btn btn-red"><span>📕</span> Rednote</a>
+                    <a href="#" class="social-btn btn-email"><span>✉️</span> Email</a>
+                </div>
+            </div>
+        </div>
+
+        <!-- ================= CONTENT: 必要准备 ================= -->
+        <div id="view-prep" class="tab-content active">
+            <div class="back-bar" id="backBarPrep" onclick="goBack('prep')">
+                <span>← 返回准备清单</span>
+            </div>
+
+            <div class="list-container" id="listPrep">
+                <div class="list-card prep-card" onclick="selectItem('prep', this, 'intro')">
+                    <div class="item-icon bg-intro">💡</div>
+                    <div class="item-info">
+                        <div class="title-main">Read First</div>
+                        <div class="title-sub">写在前面：你适合吗？</div>
+                    </div>
+                </div>
+
+                <div class="list-card prep-card" onclick="selectItem('prep', this, 'address')">
+                    <div class="item-icon bg-address">🏠</div>
+                    <div class="item-info">
+                        <div class="title-main">Residential Address</div>
+                        <div class="title-sub">住宅地址与信件收发</div>
+                    </div>
+                </div>
+
+                <div class="list-card prep-card" onclick="selectItem('prep', this, 'itin')">
+                    <div class="item-icon bg-itin">📝</div>
+                    <div class="item-info">
+                        <div class="title-main">ITIN / EIN / SSN</div>
+                        <div class="title-sub">美国税号与社会安全码</div>
+                    </div>
+                </div>
+
+                <div class="list-card prep-card" onclick="selectItem('prep', this, 'phone')">
+                    <div class="item-icon bg-phone">📱</div>
+                    <div class="item-info">
+                        <div class="title-main">Phone Number</div>
+                        <div class="title-sub">实体与虚拟电话号码</div>
+                    </div>
+                </div>
+
+                <div class="list-card prep-card" onclick="selectItem('prep', this, 'network')">
+                    <div class="item-icon bg-network">🌐</div>
+                    <div class="item-info">
+                        <div class="title-main">Network Environment</div>
+                        <div class="title-sub">纯净原生 IP 搭建</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="details-container" id="detailsPrep"></div>
+        </div>
+
+        <!-- ================= CONTENT: 申卡指南 ================= -->
+        <div id="view-guide" class="tab-content">
+            <div class="back-bar" id="backBarGuide" onclick="goBack('guide')">
+                <span>← 返回指南目录</span>
+            </div>
+
+            <div class="list-container" id="listGuide">
+                <div class="list-card guide-card" onclick="selectItem('guide', this, 'g_start')">
+                    <div class="item-icon bg-g-start">🚀</div>
+                    <div class="item-info">
+                        <div class="title-main">Beginner Roadmap</div>
+                        <div class="title-sub">零基础美卡首刷攻略</div>
+                    </div>
+                </div>
+
+                <div class="list-card guide-card" onclick="selectItem('guide', this, 'g_rule')">
+                    <div class="item-icon bg-g-rule">⚠️</div>
+                    <div class="item-info">
+                        <div class="title-main">Bank Rules</div>
+                        <div class="title-sub">Chase 5/24 与各行风控</div>
+                    </div>
+                </div>
+
+                <div class="list-card guide-card" onclick="selectItem('guide', this, 'g_points')">
+                    <div class="item-icon bg-g-points">💎</div>
+                    <div class="item-info">
+                        <div class="title-main">Points & Rewards</div>
+                        <div class="title-sub">积分转分与价值最大化</div>
+                    </div>
+                </div>
+
+                <div class="list-card guide-card" onclick="selectItem('guide', this, 'g_recon')">
+                    <div class="item-icon bg-g-recon">📞</div>
+                    <div class="item-info">
+                        <div class="title-main">Reconsideration</div>
+                        <div class="title-sub">Call 后门电话人工审核</div>
+                    </div>
+                </div>
+
+                <!-- 新增：Global Transfer 实操攻略 -->
+                <div class="list-card guide-card" onclick="selectItem('guide', this, 'g_gt')">
+                    <div class="item-icon bg-g-gt">GT</div>
+                    <div class="item-info">
+                        <div class="title-main">Global Transfer</div>
+                        <div class="title-sub">Amex 全球转卡实操</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="details-container" id="detailsGuide"></div>
+        </div>
+
+        <!-- ================= CONTENT: 卡片大全 ================= -->
+        <div id="view-cards" class="tab-content">
+            <div class="back-bar" id="backBarCards" onclick="goBack('cards')">
+                <span>← 返回所有银行</span>
+            </div>
+
+            <div class="list-container" id="listCards">
+                <div class="list-card bank-card" onclick="selectItem('cards', this, 'capone')">
+                    <div class="item-icon bg-capone">C1</div>
+                    <div class="item-info"><div class="title-main">Capital One</div><div class="title-sub">第一资本银行</div></div>
+                </div>
+                <div class="list-card bank-card" onclick="selectItem('cards', this, 'amex')">
+                    <div class="item-icon bg-amex">AX</div>
+                    <div class="item-info"><div class="title-main">American Express</div><div class="title-sub">美国运通</div></div>
+                </div>
+                <div class="list-card bank-card" onclick="selectItem('cards', this, 'chase')">
+                    <div class="item-icon bg-chase">CH</div>
+                    <div class="item-info"><div class="title-main">Chase</div><div class="title-sub">大通银行</div></div>
+                </div>
+                <div class="list-card bank-card" onclick="selectItem('cards', this, 'wellsfargo')">
+                    <div class="item-icon bg-wf">WF</div>
+                    <div class="item-info"><div class="title-main">Wells Fargo</div><div class="title-sub">富国银行</div></div>
+                </div>
+                <div class="list-card bank-card" onclick="selectItem('cards', this, 'citi')">
+                    <div class="item-icon bg-citi">CI</div>
+                    <div class="item-info"><div class="title-main">Citi</div><div class="title-sub">花旗银行</div></div>
+                </div>
+                <div class="list-card bank-card" onclick="selectItem('cards', this, 'hsbcus')">
+                    <div class="item-icon bg-hsbc">HS</div>
+                    <div class="item-info"><div class="title-main">HSBC US</div><div class="title-sub">汇丰美国</div></div>
+                </div>
+                <div class="list-card bank-card" onclick="selectItem('cards', this, 'boa')">
+                    <div class="item-icon bg-boa">BA</div>
+                    <div class="item-info"><div class="title-main">Bank of America</div><div class="title-sub">美国银行</div></div>
+                </div>
+            </div>
+
+            <div class="details-container" id="detailsCards"></div>
+        </div>
+
+    </div>
+
+    <script>
+        // === 数据源 ===
+        const cardData = {
+            capone: [
+                { name: "Venture X", fee: "$395 / 年", isFree: false, bonus: "开卡3个月内消费 $4,000 送 75,000 Venture 积分", rewards: "所有消费 2x 积分；Capital One Travel 订酒店/租车 10x，机票 5x；每年 $300 预订报销 + 10,000 周年奖励积分（免费赠送休息室）", gradient: "linear-gradient(135deg, #0d233a, #204060)" },
+                { name: "Venture One", fee: "年费 $0", isFree: true, bonus: "开卡3个月内消费 $500 送 20,000 积分", rewards: "所有消费 1.5x 积分；无境外消费手续费（FTF），入门级旅行好卡", gradient: "linear-gradient(135deg, #4a6572, #34495e)" },
+                { name: "SavorOne", fee: "年费 $0", isFree: true, bonus: "开卡3个月内消费 $500 返现 $200", rewards: "餐饮、超市、娱乐及指定流媒体消费 3% 返现；无境外消费手续费", gradient: "linear-gradient(135deg, #e67e22, #d35400)" },
+                { name: "Quicksilver", fee: "年费 $0", isFree: true, bonus: "开卡3个月内消费 $500 返现 $200", rewards: "无脑所有消费 1.5% 返现，适合新手积累信用", gradient: "linear-gradient(135deg, #bdc3c7, #7f8c8d)" }
+            ],
+            amex: [
+                { name: "Hilton Honors", fee: "年费 $0 (小白卡)", isFree: true, bonus: "开卡6个月内消费 $2,000 送 100,000 希尔顿积分", rewards: "希尔顿旗下消费 7x 积分；餐饮、超市、加油 5x 积分；送 Hilton 银卡会籍，无 FTF", gradient: "linear-gradient(135deg, #003366, #006699)" },
+                { name: "Gold Card", fee: "$325 / 年", isFree: false, bonus: "开卡6个月内消费 $6,000 送 60,000 ~ 90,000 MR 积分", rewards: "全球餐厅及美国超市 4x MR 积分；机票 3x；每年 $120 Dining Credit + $120 Uber Cash", gradient: "linear-gradient(135deg, #d4af37, #aa7c11)" },
+                { name: "Platinum Card", fee: "$695 / 年", isFree: false, bonus: "开卡6个月内消费 $8,000 送 80,000 ~ 175,000 MR 积分", rewards: "机票及预订酒店 5x 积分；百夫长休息室 + Priority Pass 权益；每年 $200 酒店报销 + $200 航空报销", gradient: "linear-gradient(135deg, #e0e0e0, #8a8a8a)" },
+                { name: "Blue Cash Everyday (BCE)", fee: "年费 $0", isFree: true, bonus: "开卡6个月内消费 $2,000 返现 $200", rewards: "美国网购、超市、加油均享 3% 返现；每月 $7 Disney Bundle 报销", gradient: "linear-gradient(135deg, #2980b9, #2c3e50)" }
+            ],
+            chase: [
+                { name: "Sapphire Preferred (CSP)", fee: "$95 / 年", isFree: false, bonus: "开卡3个月内消费 $4,000 送 60,000 ~ 75,000 UR 积分", rewards: "餐饮及指定流媒体 3x，旅行消费 2x；每年 $50 酒店报销；积分可 1:1 转等知名航司/酒店", gradient: "linear-gradient(135deg, #1e3c72, #2a5298)" },
+                { name: "Sapphire Reserve (CSR)", fee: "$550 / 年", isFree: false, bonus: "开卡3个月内消费 $4,000 送 60,000 UR 积分", rewards: "每年 $300 旅行无脑报销；旅行及餐饮 3x 积分；免费机场 Priority Pass 休息室", gradient: "linear-gradient(135deg, #2c3e50, #000000)" },
+                { name: "Freedom Unlimited (CFU)", fee: "年费 $0", isFree: true, bonus: "开卡3个月内消费 $500 返现 $150", rewards: "餐饮及药房 3% 返现；无脑所有消费 1.5% 返现；Chase Portal 旅行 5%", gradient: "linear-gradient(135deg, #27ae60, #117aca)" },
+                { name: "Freedom Flex (CFF)", fee: "年费 $0", isFree: true, bonus: "开卡3个月内消费 $500 返现 $200", rewards: "每季度特定类别 5% 轮换返现（上限 $1,500）；餐饮及药房 3%", gradient: "linear-gradient(135deg, #16a085, #2980b9)" }
+            ],
+            wellsfargo: [
+                { name: "Autograph", fee: "年费 $0", isFree: true, bonus: "开卡3个月内消费 $1,000 送 20,000 积分（价值 $200）", rewards: "餐饮、旅行、加油、交通、流媒体及手机账单 均享 3x 无上限积分；免费手机保险", gradient: "linear-gradient(135deg, #c0392b, #8e44ad)" },
+                { name: "Active Cash", fee: "年费 $0", isFree: true, bonus: "开卡3个月内消费 $500 返现 $200", rewards: "所有消费无脑 2% 现金返现，无类别限制；送最高 $600 手机保险", gradient: "linear-gradient(135deg, #d35400, #c0392b)" }
+            ],
+            citi: [
+                { name: "Custom Cash", fee: "年费 $0", isFree: true, bonus: "开卡3个月内消费 $1,500 返现 $200", rewards: "每月最高消费类别自动享 5% 返现（餐饮/加油/超市/旅行等，前 $500 消费）", gradient: "linear-gradient(135deg, #003b70, #0088cc)" },
+                { name: "Double Cash", fee: "年费 $0", isFree: true, bonus: "开卡3个月内消费 $1,500 返现 $200", rewards: "所有消费 2% 返现（刷卡 1% + 关账还款 1%）", gradient: "linear-gradient(135deg, #2980b9, #3498db)" },
+                { name: "Strata Premier", fee: "$95 / 年", isFree: false, bonus: "开卡3个月内消费 $4,000 送 70,000 ~ 75,000 TYP 积分", rewards: "餐厅、超市、加油站、酒店及机票消费 3x 积分；每年 $100 酒店折抵", gradient: "linear-gradient(135deg, #1f4068, #162447)" }
+            ],
+            hsbcus: [
+                { name: "Premier World Elite Mastercard", fee: "$395 / 年", isFree: false, bonus: "开卡3个月内消费 $4,000 送 50,000 奖励积分", rewards: "旅行消费 3x 积分，其他消费 1.5x；每年 $100 TSA/Global Entry 报销；免费 Boingo Wi-Fi", gradient: "linear-gradient(135deg, #db0011, #4a0005)" }
+            ],
+            boa: [
+                { name: "Customized Cash Rewards", fee: "年费 $0", isFree: true, bonus: "开卡90天内消费 $1,000 返现 $200", rewards: "自选类别 3% 返现（网购/餐饮/旅行/加油等）；高级客户加成最高可达 5.25%", gradient: "linear-gradient(135deg, #e31837, #990011)" },
+                { name: "Travel Rewards", fee: "年费 $0", isFree: true, bonus: "开卡90天内消费 $1,000 送 25,000 积分（可报销 $250）", rewards: "所有消费无脑 1.5 积分；无 FTF；高级会员最高加成可达 2.62 积分/美元", gradient: "linear-gradient(135deg, #00529b, #002f6c)" }
+            ]
+        };
+
+        const prepData = {
+            intro: [
+                {
+                    title: "什么样的人适合成为“云居民”？",
+                    summary: "“云居民”是指肉身不在美国，但通过合法合规的手段建立美国信用体系、申请美国信用卡的人群。如果你热衷于全球旅行、常旅客计划，或者希望规避高昂的跨国消费手续费，那么你非常适合这条路。",
+                    fullText: "<b>核心优势拆解：</b><br>1. <b>高额开卡奖励</b>：美卡通常提供数百甚至上千美元价值的开卡礼。<br>2. <b>免 0% 跨国手续费 (FTF)</b>：全球消费直接按实时汇率结算。<br>3. <b>顶尖的常旅客权益</b>：免费获得 Marriott、Hilton 高级会籍与全球机场 Priority Pass 贵宾室。<br><br><b>入门前提要件：</b>需要具备合规商业私人地址 (PMB)、美国电话号码以及申请 ITIN/SSN 税号的基本耐心。"
+                }
+            ],
+            address: [
+                { 
+                    title: "如何获取商业私人地址 (PMB) 用于海外申卡", 
+                    summary: "身在海外如何拥有一张真实街道地址？解析 Anytime Mailbox 与 Planet Express 的区别，以及在跨国网银申请中提供合规 Address Proof 的实操技巧。",
+                    fullText: "<b>常用地址服务商对比：</b><br>• <b>Anytime Mailbox</b>：节点极多，可选择非商业区（商业属性较低）的住宅风格地址。<br>• <b>PostScan Mail / Planet Express</b>：适合转运信件与银行卡。<br><br><b>注意事项：</b>选择地址时尽量避免在 USPS 数据库中被标记为 PO Box 的地址。绝大多数美国发卡行（如 Chase、Amex）仅接受 Physical Street Address。"
+                },
+                { 
+                    title: "地址证明 (PoA) 的常见问题及解决思路", 
+                    summary: "银行要求验证居住地址时，如何通过租房合同、水电账单或海外券商对账单安全通过银行的风控审查。",
+                    fullText: "<b>最易被采信的 PoA 资料：</b><br>1. 美国券商（如 Charles Schwab / Fidelity）的月度对账单 (Statement)。<br>2. 带有新地址的 Capital One 或 Amex 官方账单。<br>3. 正规的表格1583 (USPS Form 1583) 公证文件。<br>遇到风控时，及时拨打客服传真或提交 PDF 原件即可顺利解锁。"
+                }
+            ],
+            itin: [
+                { 
+                    title: "零门槛申请 ITIN 与 EIN 的完全指南", 
+                    summary: "非美居民如何合规申请个人纳税识别码 (ITIN)？详细拆解 W-7 表格填写规范，以及代办机构与自助邮寄护照公证件的优劣势分析。",
+                    fullText: "<b>申请 ITIN 的三大常见途径：</b><br>1. <b>CAC (Certified Acceptance Agent) 代办</b>：无需邮寄护照原件，护照扫描件验证后直接上报国税局 (IRS)。<br>2. <b>亚马逊出版 (KDP) 出书法</b>：通过获得版税收入及 1042-S 表格合规申请。<br>3. <b>直接邮寄护照原件至 IRS</b>：成本最低，但存在信件丢失或护照扣留数月的风险。<br>下码周期通常为 6~12 周。"
+                },
+                { 
+                    title: "ITIN 下发后如何应对 TransUnion 验证报错", 
+                    summary: "很多云居民在拿到 ITIN 首次申卡时，常遇到三大信用局（尤其是 TransUnion）无法拉取信用报告的问题。本文教你如何发传真并与客服对线解锁记录。",
+                    fullText: "<b>解决 TU 无记录的三步法：</b><br>1. 准备 ITIN 确认信 (CP565)、护照复印件与地址证明。<br>2. 填写 TransUnion 官方的 Credit Report Request 表格。<br>3. 传真至 TU 审核部门，通常 3~5 个工作日内会在数据库中建立你的初始信用档案 (File)。"
+                }
+            ],
+            phone: [
+                { 
+                    title: "保号神器 Google Voice 与 Ultra Mobile 对比", 
+                    summary: "接收美国银行的 2FA 验证码，到底是选择免费的 VoIP 电话还是 3刀/月的实体卡 PayGo？一篇看懂各自的拦截机制。",
+                    fullText: "<b>虚拟号 (VoIP) vs 实体卡 (Mobile)：</b><br>• <b>Google Voice</b>：无月租，但属于 VoIP，Chase / Capital One 等发卡行在风控环节会拒绝向其发送安全验证码。<br>• <b>Ultra Mobile PayGo / Red Pocket</b>：真实美国实体基站卡，支持全球漫游接收短信，是网申美卡的必备基础。"
+                },
+                { 
+                    title: "Chase 银行 Reconsideration 电话话术解析", 
+                    summary: "网申大通银行遭遇 Pending 或者拒信不要慌。教你如何拨打后门电话，通过人工审核策略性应对客服质询，逆转申卡结果。",
+                    fullText: "<b>后门电话关键话术：</b><br>1. 礼貌询问：'I am calling to check the status of my application and provide any additional verification if needed.'<br>2. 若被问及信用记录短：强调自己在其他银行的良好还款记录以及目前稳定的收入。<br>3. 若因为额度不足：主动提出挪用已有卡片的额度 (Reallocate Credit Line) 来开立新卡。"
+                }
+            ],
+            network: [
+                { 
+                    title: "为什么申请美国信用卡需要纯净的原生 IP", 
+                    summary: "带你了解什么是高欺诈风险分 (Fraud Score)。IP 的纯净度直接决定了你申请运通小白卡等入门卡种时，是否会触发二次身份验证。",
+                    fullText: "<b>网申环境搭建要点：</b><br>• 避免使用机房 (Datacenter) 节点，发卡行安全系统会直接标记高风险。<br>• 推荐使用家宽住宅 IP (Residential IP) 或专线代理。<br>• 保持浏览器 Cookie 纯净，开启无痕模式，或固定使用干净的系统环境进行网申。"
+                }
+            ]
+        };
+
+        const guideData = {
+            g_start: [
+                {
+                    title: "云居民第一张美卡开卡路线图",
+                    summary: "拿到 ITIN 后的第一步怎么走？解析美国运通 (Amex) 与 Capital One (C1) 的无信用记录友情入门卡种选择策略。",
+                    fullText: "<b>最佳首发卡推荐：</b><br>1. <b>Amex Hilton 小白卡 / BCE</b>：Amex 对无 SSN/ITIN 历史的新人最友好，可通过 Passport / ITIN 直接在线提交。<br>2. <b>Capital One Quicksilver / SavorOne</b>：支持预先测额 (Prequalify)，不伤 Hard Pull 即可查看通过率。<br><br><b>积累信用策略：</b>首张卡下卡后，按时全额还款 6 个月以上，建立起 FICO 分数（建议 700+），再冲击 Chase 大通银行。"
+                }
+            ],
+            g_rule: [
+                {
+                    title: "破解 Chase 5/24 铁律与各大行风控红线",
+                    summary: "美卡圈最负盛名的规则详解：24 个月内超过 5 张新卡直接秒拒。如何规划你的申卡顺序以实现利益最大化。",
+                    fullText: "<b>各大银行核心风控限制：</b><br>• <b>Chase 5/24</b>：过去 24 个月内如果任何银行开户超过 5 张个人信用卡，Chase 任何卡均无法通过。<br>• <b>Amex 一生一次 (Once in a Lifetime)</b>：同款卡片的开卡奖励每人一生只能拿一次。<br>• <b>Citi 8/65 规则</b>：8天内最多申请1张，65天内最多申请2张。<br><b>建议策略：</b>优先将前 5 张卡额度留给 Chase CSP / CFF / CFU 等高价值卡片。"
+                }
+            ],
+            g_points: [
+                {
+                    title: "四大积分体系 (MR/UR/TYP/C1) 转分指南",
+                    summary: "拒绝直接兑换现金！教你如何将信用卡积分以 1:1 甚至更高比例转入国泰、加航、万豪等航空与酒店常旅客计划。",
+                    fullText: "<b>积分价值最大化公式：</b><br>• <b>Chase UR</b>：可 1:1 转入 Hyatt (凯悦酒店)，常年用出 1.8~2.0 美分/分的价值。<br>• <b>Amex MR</b>：转入全日空 (ANA) 或国泰航空 (Asia Miles) 兑换中美/中欧商务舱机票。<br>• <b>Capital One & Citi</b>：转入哥伦比亚航空 (Avianca) 兑换星空联盟跨国头等舱。"
+                }
+            ],
+            g_recon: [
+                {
+                    title: "申卡被拒？学会 Recon 重新考虑流程逆袭下卡",
+                    summary: "收到拒信 (Rejection Letter) 并不意味着终局。详细拆解 Call 后门电话人工审核的心理战术与证明文件补充技巧。",
+                    fullText: "<b>Recon 核心三步走：</b><br>1. 收到拒信后，第一时间查看 Deny Reason（如：信用历史太短、近期开户过多）。<br>2. 拨打 Recon 专线（客服电话通常在各大社区可查）。<br>3. 针对拒信理由逐一澄清，证明自己的还款能力与对该银行的忠诚度。"
+                }
+            ],
+            g_gt: [
+                {
+                    title: "高阶玩法：Amex Global Transfer (GT) 全球转卡",
+                    summary: "已有香港或其他地区 Amex 信用卡？教你如何通过 GT 机制绕开美国信用局报告空白期，利用 TransUnion 记录直接“空降”申请美国运通卡。",
+                    fullText: "<b>GT 核心操作步骤：</b><br>1. <b>账户预热</b>：确保你的非美国 Amex 已使用至少 3-6 个月，且地址已提前更改为美国私人商业地址 (PMB)。<br>2. <b>入口选择</b>：访问美国 Amex 官网，通过现有账户 (Log In) 的 Global Transfer 专属通道发起申请。<br>3. <b>信用挂钩</b>：系统会利用你所在地区（如香港）的 TransUnion 信用报告来评估你首张美卡的核发资格。<br><br><b>核心优势：</b>无需 ITIN 即可极速下卡，建立美国信用记录的最佳跳板。"
+                }
+            ]
+        };
+
+        // === 全局状态 ===
+        let state = {
+            about: { isSelected: false },
+            prep: { isSelected: false },
+            guide: { isSelected: false },
+            cards: { isSelected: false },
+            isTraditional: false,
+            isDark: false
+        };
+
+        // 简繁体转换简易字典
+        const simToTraMap = {"云":"雲","国":"國","库":"庫","卡":"卡","准备":"準備","指南":"指南","大全":"大全","写":"寫","面":"面","码":"碼","实":"實","体":"體","设":"設","备":"備","话":"話","术":"術","说":"說","关":"關","于":"於","莱":"萊","恩":"恩","资":"資","深":"深","创":"創","作":"作","最":"最","通":"通","俗":"俗","差":"差","帮":"幫","助":"助","体":"體","验":"驗","优":"優","质":"質","全":"全","球":"球","化":"化","金":"金","融":"融","系":"系","统":"統","带":"帶","利":"利","便":"便","利":"利","首":"首","进":"進","阶":"階","转":"轉","分":"分","高":"高","端":"端","权":"權","益":"益","风":"風","控":"控","门":"門","只":"只","要":"要","开":"開","奖":"獎","励":"勵","换":"換","返":"返","现":"現","网":"網","设":"設"};
+
+        // === 辅助函数：全局文本翻译 ===
+        function translateText(text) {
+            if (!text) return text;
+            let result = text;
+            if (state.isTraditional) {
+                for (let key in simToTraMap) {
+                    result = result.replace(new RegExp(key, 'g'), simToTraMap[key]);
+                }
+            } else {
+                for (let key in simToTraMap) {
+                    result = result.replace(new RegExp(simToTraMap[key], 'g'), key);
+                }
+            }
+            return result;
+        }
+
+        // === 顶部按钮交互 ===
+        function toggleSearch() {
+            const wrapper = document.getElementById('searchWrapper');
+            wrapper.classList.toggle('active');
+            if (wrapper.classList.contains('active')) {
+                document.getElementById('searchInput').focus();
             }
         }
 
-        // 3. 将待匹配文本转换为当前语言（兼容繁体输入搜索），并转小写
-        textToSearch = translateText(textToSearch).toLowerCase();
-
-        // 4. 匹配显示逻辑
-        if (textToSearch.includes(query) || query === '') {
-            card.style.display = 'flex';
-        } else {
-            card.style.display = 'none';
+        function toggleDarkMode() {
+            state.isDark = !state.isDark;
+            document.body.classList.toggle('dark-mode', state.isDark);
+            document.getElementById('modeIcon').innerText = state.isDark ? '☀️' : '🌙';
+            document.getElementById('modeTxt').innerText = state.isDark ? '白天' : '夜间';
         }
-    });
-}
+        
+        function toggleLanguage() {
+            state.isTraditional = !state.isTraditional;
+            document.getElementById('langTxt').innerText = state.isTraditional ? '简体' : '繁体';
+            
+            const walk = document.createTreeWalker(document.body, NodeFilter.SHOW_TEXT, null, false);
+            let node;
+            while (node = walk.nextNode()) {
+                if (node.parentElement.tagName === 'SCRIPT' || node.parentElement.tagName === 'STYLE') continue;
+                node.nodeValue = translateText(node.nodeValue);
+            }
+        }
 
-// === 修改：渲染器：信用卡 (加入翻译处理) ===
-function renderCards(container, list) {
-    const htmlStr = list.map(c => `
-        <div class="content-box">
-            <div class="card-header">
-                <div class="card-face" style="background: ${c.gradient}"></div>
-                <div class="card-main-info">
-                    <div class="card-title">${c.name}</div>
-                    <span class="fee-badge ${c.isFree ? 'fee-free' : 'fee-paid'}">${c.fee}</span>
-                </div>
-            </div>
-            <div class="card-body">
-                <div class="info-row">
-                    <div class="info-label">🎁 开卡奖励:</div>
-                    <div class="info-value highlight-text">${c.bonus}</div>
-                </div>
-                <div class="info-row">
-                    <div class="info-label">💳 刷卡福利:</div>
-                    <div class="info-value">${c.rewards}</div>
-                </div>
-            </div>
-        </div>
-    `).join('');
-    // 渲染前统一进行简繁体同步
-    container.innerHTML = translateText(htmlStr);
-}
+        // === 深度搜索穿透逻辑 ===
+        function handleSearch() {
+            const query = document.getElementById('searchInput').value.toLowerCase().trim();
+            const allCards = document.querySelectorAll('.list-card');
+            
+            allCards.forEach(card => {
+                let textToSearch = card.innerText;
+                
+                // 解析 onclick 事件，抓取深层详情数据
+                const onclickStr = card.getAttribute('onclick');
+                if (onclickStr) {
+                    const match = onclickStr.match(/selectItem\s*\(\s*['"]([^'"]+)['"]\s*,\s*(?:this|me)\s*,\s*['"]([^'"]+)['"]\s*\)/);
+                    if (match) {
+                        const tabId = match[1];
+                        const itemKey = match[2];
+                        let deepData = null;
+                        
+                        if (tabId === 'cards' && cardData[itemKey]) deepData = cardData[itemKey];
+                        else if (tabId === 'prep' && prepData[itemKey]) deepData = prepData[itemKey];
+                        else if (tabId === 'guide' && guideData[itemKey]) deepData = guideData[itemKey];
+                        
+                        if (deepData) textToSearch += " " + JSON.stringify(deepData);
+                    }
+                }
 
-// === 修改：渲染器：文章 (加入翻译处理) ===
-function renderArticles(container, list) {
-    const htmlStr = list.map((a, idx) => `
-        <div class="content-box">
-            <div class="article-title">${a.title}</div>
-            <div class="article-summary">${a.summary}</div>
-            <div class="article-full-text" id="fulltext-${idx}">
-                ${a.fullText}
-            </div>
-            <div class="article-footer">
-                <span class="read-btn" id="readbtn-${idx}" onclick="toggleArticle(${idx})">阅读全文 →</span>
-            </div>
-        </div>
-    `).join('');
-    // 渲染前统一进行简繁体同步
-    container.innerHTML = translateText(htmlStr);
-}
+                // 翻译待匹配文本（兼容繁体输入）并转小写
+                textToSearch = translateText(textToSearch).toLowerCase();
+
+                if (textToSearch.includes(query) || query === '') {
+                    card.style.display = 'flex';
+                } else {
+                    card.style.display = 'none';
+                }
+            });
+        }
+
+        // === Tab 切换逻辑 ===
+        function switchTab(tabId) {
+            const btns = document.querySelectorAll('.tab-btn');
+            btns.forEach(btn => btn.classList.remove('active'));
+            if(event && event.target) event.target.classList.add('active');
+
+            document.querySelectorAll('.tab-content').forEach(view => view.classList.remove('active'));
+            document.getElementById(`view-${tabId}`).classList.add('active');
+            
+            if (state[tabId] && state[tabId].isSelected) {
+                goBack(tabId);
+            }
+        }
+
+        // === 选中一级类目 ===
+        function selectItem(tabId, element, itemKey) {
+            if (state[tabId].isSelected) return;
+            state[tabId].isSelected = true;
+
+            document.getElementById(`backBar${capitalize(tabId)}`).classList.add('visible');
+
+            const allItems = document.querySelectorAll(`#list${capitalize(tabId)} .list-card`);
+            allItems.forEach(item => {
+                if (item === element) {
+                    item.classList.add('selected-active');
+                } else {
+                    item.classList.add('hidden');
+                }
+            });
+
+            const container = document.getElementById(`details${capitalize(tabId)}`);
+            
+            if (tabId === 'cards') {
+                renderCards(container, cardData[itemKey] || []);
+            } else if (tabId === 'prep') {
+                renderArticles(container, prepData[itemKey] || []);
+            } else if (tabId === 'guide') {
+                renderArticles(container, guideData[itemKey] || []);
+            }
+
+            container.classList.add('visible');
+        }
+
+        // === 返回一级类目 ===
+        function goBack(tabId) {
+            if (!state[tabId].isSelected) return;
+            state[tabId].isSelected = false;
+
+            document.getElementById(`backBar${capitalize(tabId)}`).classList.remove('visible');
+
+            const container = document.getElementById(`details${capitalize(tabId)}`);
+            container.classList.remove('visible');
+
+            setTimeout(() => {
+                const allItems = document.querySelectorAll(`#list${capitalize(tabId)} .list-card`);
+                allItems.forEach(item => {
+                    item.classList.remove('hidden', 'selected-active');
+                });
+                container.innerHTML = '';
+            }, 150);
+        }
+
+        // === 渲染器：信用卡 (已加入翻译处理) ===
+        function renderCards(container, list) {
+            const htmlStr = list.map(c => `
+                <div class="content-box">
+                    <div class="card-header">
+                        <div class="card-face" style="background: ${c.gradient}"></div>
+                        <div class="card-main-info">
+                            <div class="card-title">${c.name}</div>
+                            <span class="fee-badge ${c.isFree ? 'fee-free' : 'fee-paid'}">${c.fee}</span>
+                        </div>
+                    </div>
+                    <div class="card-body">
+                        <div class="info-row">
+                            <div class="info-label">🎁 开卡奖励:</div>
+                            <div class="info-value highlight-text">${c.bonus}</div>
+                        </div>
+                        <div class="info-row">
+                            <div class="info-label">💳 刷卡福利:</div>
+                            <div class="info-value">${c.rewards}</div>
+                        </div>
+                    </div>
+                </div>
+            `).join('');
+            container.innerHTML = translateText(htmlStr);
+        }
+
+        // === 渲染器：文章 (已加入翻译处理) ===
+        function renderArticles(container, list) {
+            const htmlStr = list.map((a, idx) => `
+                <div class="content-box">
+                    <div class="article-title">${a.title}</div>
+                    <div class="article-summary">${a.summary}</div>
+                    <div class="article-full-text" id="fulltext-${idx}">
+                        ${a.fullText}
+                    </div>
+                    <div class="article-footer">
+                        <span class="read-btn" id="readbtn-${idx}" onclick="toggleArticle(${idx})">阅读全文 →</span>
+                    </div>
+                </div>
+            `).join('');
+            container.innerHTML = translateText(htmlStr);
+        }
+
+        // 展开/收起文章全文
+        function toggleArticle(idx) {
+            const textElem = document.getElementById(`fulltext-${idx}`);
+            const btnElem = document.getElementById(`readbtn-${idx}`);
+            if (textElem.classList.contains('open')) {
+                textElem.classList.remove('open');
+                btnElem.innerText = translateText('阅读全文 →');
+            } else {
+                textElem.classList.add('open');
+                btnElem.innerText = translateText('收起全文 ↑');
+            }
+        }
+
+        function capitalize(str) {
+            return str.charAt(0).toUpperCase() + str.slice(1);
+        }
+    </script>
+</body>
+</html>
